@@ -1,215 +1,316 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Fire Warning Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Cảnh Báo Cháy Thông Minh</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- ChartJS for realtime graph -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
 
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-        background: #eef2f3;
-    }
-    .card {
-        background: white;
-        padding: 20px;
-        border-radius: 15px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        max-width: 600px;
-    }
-    .alert {
-        animation: blink 0.7s infinite alternate;
-        background-color: #ffb3b3 !important;
-        border-left: 8px solid red;
-    }
-    @keyframes blink {
-        from { background-color: #ffd6d6; }
-        to { background-color: #ff9b9b; }
-    }
-    h2 { margin-top: 0; }
-    input, button {
-        width: 100%;
-        padding: 10px;
-        margin-top: 10px;
-        font-size: 16px;
-    }
-    button {
-        background-color: #007bff;
-        color: white;
-        cursor: pointer;
-        border-radius: 8px;
-        border: none;
-    }
-</style>
+        h1 {
+            text-align: center;
+            color: #d32f2f;
+            margin-bottom: 30px;
+        }
+
+        /* Bố cục dạng lưới */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Thẻ Card */
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            color: #666;
+            margin-top: 0;
+        }
+
+        .value-display {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        /* Hiệu ứng cảnh báo nhấp nháy */
+        .alert-mode {
+            animation: blink-red 0.8s infinite alternate;
+            color: white !important;
+            background-color: #ff4d4d !important;
+        }
+        
+        .alert-mode .value-display, .alert-mode h2 {
+            color: white !important;
+        }
+
+        @keyframes blink-red {
+            from { background-color: #ff4d4d; }
+            to { background-color: #b30000; }
+        }
+
+        /* Phần nhập liệu */
+        .control-group {
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        input {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            outline: none;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Card biểu đồ rộng full */
+        .chart-card {
+            grid-column: 1 / -1; /* Chiếm hết chiều ngang */
+        }
+    </style>
 </head>
-
 <body>
 
-<h1 style="font-size:32px; font-weight:bold;">🔥 Bảng điều khiển cảnh báo cháy</h1>
+    <h1>🔥 HỆ THỐNG GIÁM SÁT & CẢNH BÁO CHÁY</h1>
 
-<!-- NHIỆT ĐỘ -->
-<div class="card" id="tempCard">
-    <h2>🌡 Nhiệt độ</h2>
-    <div id="tempValue" style="font-size:26px; font-weight:bold;">Đang tải...</div>
-</div>
+    <div class="container">
+        
+        <div class="card" id="tempCard">
+            <h2>🌡 NHIỆT ĐỘ HIỆN TẠI</h2>
+            <div class="value-display" id="tempValue">-- °C</div>
+            <p>Trạng thái: <span id="tempStatus">Bình thường</span></p>
+        </div>
 
-<!-- KHÓI -->
-<div class="card" id="smokeCard">
-    <h2>💨 Mức độ khói</h2>
-    <div id="smokeValue" style="font-size:26px; font-weight:bold;">Đang tải...</div>
-</div>
+        <div class="card" id="smokeCard">
+            <h2>💨 NỒNG ĐỘ KHÓI</h2>
+            <div class="value-display" id="smokeValue">-- ppm</div>
+            <p>Trạng thái: <span id="smokeStatus">Bình thường</span></p>
+        </div>
 
-<!-- NGƯỠNG NHIỆT -->
-<div class="card">
-    <h2>⚠ Ngưỡng nhiệt độ</h2>
-    Hiện tại: <span id="thresholdValue">Đang tải...</span>
+        <div class="card">
+            <h2>⚙ CÀI ĐẶT NGƯỠNG NHIỆT</h2>
+            <div style="font-size: 20px; font-weight: bold; margin: 10px 0;">
+                Hiện tại: <span id="thresholdValue" style="color: #d32f2f;">--</span> °C
+            </div>
+            <div class="control-group">
+                <input type="number" id="newThreshold" placeholder="Nhập ngưỡng mới...">
+                <button onclick="updateThreshold()">Cập nhật</button>
+            </div>
+        </div>
 
-    <input type="number" id="newThreshold" placeholder="Nhập ngưỡng nhiệt độ mới">
-    <button onclick="updateThreshold()">Cập nhật</button>
-</div>
+        <div class="card">
+            <h2>⚙ CÀI ĐẶT NGƯỠNG KHÓI</h2>
+            <div style="font-size: 20px; font-weight: bold; margin: 10px 0;">
+                Hiện tại: <span id="smokeThresValue" style="color: #d32f2f;">--</span> ppm
+            </div>
+            <div class="control-group">
+                <input type="number" id="newSmokeThres" placeholder="Nhập ngưỡng mới...">
+                <button onclick="updateSmokeThreshold()">Cập nhật</button>
+            </div>
+        </div>
 
-<!-- NGƯỠNG KHÓI -->
-<div class="card">
-    <h2>💨 Ngưỡng khói</h2>
-    Hiện tại: <span id="smokeThresValue">Đang tải...</span>
+        <div class="card chart-card">
+            <h2>📈 BIỂU ĐỒ THEO DÕI THỜI GIAN THỰC</h2>
+            <canvas id="myChart" height="100"></canvas>
+        </div>
 
-    <input type="number" id="newSmokeThres" placeholder="Nhập ngưỡng khói mới">
-    <button onclick="updateSmokeThreshold()">Cập nhật</button>
-</div>
+    </div>
 
-<!-- BIỂU ĐỒ REALTIME -->
-<div class="card">
-    <h2>📈 Biểu đồ nhiệt độ & khói (Realtime)</h2>
-    <canvas id="chartJS" height="180"></canvas>
-</div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
+    <script>
+        // 1. CẤU HÌNH FIREBASE (Thông tin của anh)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAAoqP-5Kkw_sMJOvLzMd9yMZsto86rQBk",
+            authDomain: "fire-warning-3f43e.firebaseapp.com",
+            databaseURL: "https://fire-warning-3f43e-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "fire-warning-3f43e",
+            storageBucket: "fire-warning-3f43e.firebasestorage.app",
+            messagingSenderId: "216206579900",
+            appId: "1:216206579900:web:aa5f46d236923b921418b9"
+        };
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+        // Khởi tạo Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-<script>
-// FIREBASE CONFIG
-const firebaseConfig = {
-    apiKey: "AIzaSyAAoqP-5Kkw_sMJOvLzMd9yMZsto86rQBk",
-    authDomain: "fire-warning-3f43e.firebaseapp.com",
-    databaseURL: "https://fire-warning-3f43e-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "fire-warning-3f43e",
-    storageBucket: "fire-warning-3f43e.firebasestorage.app",
-    messagingSenderId: "216206579900",
-    appId: "1:216206579900:web:aa5f46d236923b921418b9",
-};
-firebase.initializeApp(firebaseConfig);
-
-const db = firebase.database();
-
-// -------- BIỂU ĐỒ REALTIME ------------
-let labels = [];
-let tempData = [];
-let smokeData = [];
-
-const ctx = document.getElementById('chartJS').getContext('2d');
-const chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels,
-        datasets: [
-            {
-                label: "Nhiệt độ (°C)",
-                data: tempData,
-                borderColor: "red",
-                borderWidth: 2
+        // 2. KHỞI TẠO BIỂU ĐỒ (CHART.JS)
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], // Trục thời gian
+                datasets: [{
+                    label: 'Nhiệt độ (°C)',
+                    data: [],
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4, // Đường cong mềm
+                    fill: true
+                }, {
+                    label: 'Khói (PPM)',
+                    data: [],
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                }]
             },
-            {
-                label: "Khói",
-                data: smokeData,
-                borderColor: "blue",
-                borderWidth: 2
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } },
+                animation: { duration: 0 } // Tắt hiệu ứng lướt để đỡ giật
             }
-        ]
-    },
-    options: {
-        scales: {
-            y: { beginAtZero: true }
+        });
+
+        // 3. BIẾN TOÀN CỤC (Lưu giá trị mới nhất)
+        let currentTemp = 0;
+        let currentSmoke = 0;
+        let tempLimit = 100;
+        let smokeLimit = 100;
+
+        // 4. LẮNG NGHE DỮ LIỆU TỪ FIREBASE
+        
+        // --- NHIỆT ĐỘ ---
+        db.ref("Temperature").on("value", (snap) => {
+            currentTemp = snap.val() || 0;
+            document.getElementById("tempValue").innerText = currentTemp + " °C";
+            
+            // Kiểm tra cảnh báo
+            let card = document.getElementById("tempCard");
+            let status = document.getElementById("tempStatus");
+            if(currentTemp >= tempLimit) {
+                card.classList.add("alert-mode");
+                status.innerText = "QUÁ NHIỆT !!!";
+            } else {
+                card.classList.remove("alert-mode");
+                status.innerText = "Bình thường";
+            }
+        });
+
+        // --- KHÓI ---
+        db.ref("Smoke").on("value", (snap) => {
+            currentSmoke = snap.val() || 0;
+            document.getElementById("smokeValue").innerText = currentSmoke + " ppm";
+
+            // Kiểm tra cảnh báo
+            let card = document.getElementById("smokeCard");
+            let status = document.getElementById("smokeStatus");
+            if(currentSmoke >= smokeLimit) {
+                card.classList.add("alert-mode");
+                status.innerText = "CÓ KHÓI !!!";
+            } else {
+                card.classList.remove("alert-mode");
+                status.innerText = "Bình thường";
+            }
+        });
+
+        // --- NGƯỠNG NHIỆT ---
+        db.ref("Threshold").on("value", (snap) => {
+            tempLimit = snap.val();
+            document.getElementById("thresholdValue").innerText = tempLimit;
+        });
+
+        // --- NGƯỠNG KHÓI ---
+        db.ref("SmokeThreshold").on("value", (snap) => {
+            smokeLimit = snap.val();
+            document.getElementById("smokeThresValue").innerText = smokeLimit;
+        });
+
+        // 5. CẬP NHẬT BIỂU ĐỒ (Loop 2 giây/lần)
+        setInterval(() => {
+            let now = new Date().toLocaleTimeString();
+            
+            // Giữ tối đa 20 điểm dữ liệu để không bị lag
+            if (myChart.data.labels.length > 20) {
+                myChart.data.labels.shift();
+                myChart.data.datasets[0].data.shift();
+                myChart.data.datasets[1].data.shift();
+            }
+
+            // Thêm dữ liệu mới vào biểu đồ
+            myChart.data.labels.push(now);
+            myChart.data.datasets[0].data.push(currentTemp);
+            myChart.data.datasets[1].data.push(currentSmoke);
+            
+            myChart.update();
+        }, 2000); // 2000ms = 2 giây
+
+        // 6. HÀM XỬ LÝ NÚT BẤM (CÓ MẬT KHẨU)
+        function checkPassword() {
+            let pass = prompt("🔒 Nhập mật khẩu Admin:", "");
+            if (pass === "123456") return true; // Đổi mật khẩu tại đây
+            else {
+                alert("Sai mật khẩu!");
+                return false;
+            }
         }
-    }
-});
 
-// Hàm cập nhật biểu đồ
-function addChartData(temp, smoke) {
-    let now = new Date().toLocaleTimeString();
+        function updateThreshold() {
+            if(!checkPassword()) return;
+            let val = document.getElementById("newThreshold").value;
+            if(val) {
+                db.ref("Threshold").set(Number(val));
+                alert("Đã cập nhật ngưỡng nhiệt độ!");
+                document.getElementById("newThreshold").value = "";
+            }
+        }
 
-    labels.push(now);
-    tempData.push(temp);
-    smokeData.push(smoke);
+        function updateSmokeThreshold() {
+            if(!checkPassword()) return;
+            let val = document.getElementById("newSmokeThres").value;
+            if(val) {
+                db.ref("SmokeThreshold").set(Number(val));
+                alert("Đã cập nhật ngưỡng khói!");
+                document.getElementById("newSmokeThres").value = "";
+            }
+        }
 
-    if (labels.length > 20) {
-        labels.shift();
-        tempData.shift();
-        smokeData.shift();
-    }
-
-    chart.update();
-}
-
-
-// ----------- REALTIME TEMPERATURE ----------
-let tempThreshold = 0;
-db.ref("Threshold").on("value", snap => {
-    tempThreshold = snap.val();
-    document.getElementById("thresholdValue").innerText = snap.val();
-});
-
-db.ref("Temperature").on("value", snap => {
-    let t = snap.val();
-    document.getElementById("tempValue").innerHTML = t + " °C";
-
-    // Cảnh báo vượt ngưỡng
-    let card = document.getElementById("tempCard");
-    card.classList.toggle("alert", t >= tempThreshold);
-
-    addChartData(t, null);
-});
-
-// ----------- REALTIME SMOKE ----------
-let smokeThreshold = 0;
-db.ref("SmokeThreshold").on("value", snap => {
-    smokeThreshold = snap.val();
-    document.getElementById("smokeThresValue").innerText = snap.val();
-});
-
-db.ref("Smoke").on("value", snap => {
-    let s = snap.val();
-    document.getElementById("smokeValue").innerHTML = s;
-
-    let card = document.getElementById("smokeCard");
-    card.classList.toggle("alert", s >= smokeThreshold);
-
-    addChartData(null, s);
-});
-
-// ----------- UPDATE THRESHOLD -----------
-function updateThreshold() {
-    let input = document.getElementById("newThreshold");
-    if (input.value === "") return alert("Nhập giá trị!");
-
-    db.ref("Threshold").set(Number(input.value));
-    input.value = "";
-}
-
-// ----------- UPDATE SMOKE THRESHOLD -----
-function updateSmokeThreshold() {
-    let input = document.getElementById("newSmokeThres");
-    if (input.value === "") return alert("Nhập giá trị!");
-
-    db.ref("SmokeThreshold").set(Number(input.value));
-    input.value = "";
-}
-</script>
-
+    </script>
 </body>
 </html>
