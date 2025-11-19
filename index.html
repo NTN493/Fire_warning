@@ -117,6 +117,7 @@
     
         db.ref("Threshold").set(Number(val));
         alert("Temperature threshold updated!");
+        inputElement.value = ""; // clear giá trị vừa nhập ở ô nhập giá trị
     }
     // UPDATE SMOKE_THRESHOLD
     function updateSmokeThreshold() {
@@ -128,10 +129,12 @@
     
         db.ref("SmokeThreshold").set(Number(val));
         alert("Smoke threshold updated!");
+        inputElement.value = ""; // clear giá trị vừa nhập ở ô nhập giá trị
     }
 
 </script>
 
 </body>
 </html>
+
 
