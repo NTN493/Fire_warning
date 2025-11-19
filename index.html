@@ -283,14 +283,9 @@
             myChart.update();
         }, 2000);
 
-        // --- BUTTON ACTIONS ---
-        function checkPassword() {
-            let p = prompt("🔒 Nhập mật khẩu Admin:");
-            return (p === "123456");
-        }
 
         function updateThreshold() {
-            if(!checkPassword()) { alert("Sai mật khẩu!"); return; }
+
             let val = document.getElementById("newThreshold").value;
             if(val) {
                 db.ref("Threshold").set(Number(val));
@@ -300,7 +295,7 @@
         }
 
         function updateSmokeThreshold() {
-            if(!checkPassword()) { alert("Sai mật khẩu!"); return; }
+
             let val = document.getElementById("newSmokeThres").value;
             if(val) {
                 db.ref("SmokeThreshold").set(Number(val));
@@ -311,5 +306,6 @@
     </script>
 </body>
 </html>
+
 
 
