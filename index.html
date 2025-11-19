@@ -47,20 +47,25 @@
 </div>
 
 <div class="card">
-    <h2>⚠ Threshold</h2>
-    <div id="thresholdValue">Loading...</div>
+    <h2>⚠ Temperature Threshold</h2>
+    <div style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">
+        Current: <span id="thresholdValue">Loading...</span>
+    </div>
 
-    <input type="number" id="newThreshold" placeholder="Enter new threshold">
+    <input type="number" id="newThreshold" placeholder="Enter new temperature threshold">
     <button onclick="updateThreshold()">Update</button>
 </div>
-    
+
 <div class="card">
     <h2>💨 Smoke Threshold</h2>
-    <div id="smokeThresValue">Loading...</div>
+    <div style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">
+        Current: <span id="smokeThresValue">Loading...</span>
+    </div>
 
     <input type="number" id="newSmokeThres" placeholder="Enter new smoke threshold">
     <button onclick="updateSmokeThreshold()">Update</button>
 </div>
+
 
 <!-- Firebase v8 COMPAT MODE (bắt buộc để chạy trên GitHub Pages) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -92,14 +97,14 @@
         document.getElementById("smokeValue").innerText = snapshot.val();
     });
 
-    // REALTIME THRESHOLD
+    // REALTIME TEMPERATURE THRESHOLD
     db.ref("Threshold").on("value", snapshot => {
         document.getElementById("thresholdValue").innerText = snapshot.val();
     });
-
+    
     // REALTIME SMOKE THRESHOLD
     db.ref("SmokeThreshold").on("value", snapshot => {
-    document.getElementById("smokeThresValue").innerText = snapshot.val();
+        document.getElementById("smokeThresValue").innerText = snapshot.val();
     });
 
     // UPDATE THRESHOLD
@@ -109,11 +114,10 @@
             alert("Please enter a number");
             return;
         }
-
-        db.ref("Threshold").set(Number(val));
-        alert("Threshold updated!");
-    }
     
+        db.ref("Threshold").set(Number(val));
+        alert("Temperature threshold updated!");
+    }
     // UPDATE SMOKE_THRESHOLD
     function updateSmokeThreshold() {
         let val = document.getElementById("newSmokeThres").value;
@@ -123,9 +127,9 @@
         }
     
         db.ref("SmokeThreshold").set(Number(val));
-        alert("Smoke Threshold updated!");
+        alert("Smoke threshold updated!");
     }
-    
+
 </script>
 
 </body>
