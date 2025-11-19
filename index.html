@@ -253,7 +253,7 @@
         db.ref("SmokeThreshold").on("value", snap => {
             smokeLimit = snap.val();
             document.getElementById("smokeThresValue").innerText = smokeLimit;
-            checkAlert("smokeCard", "smokeStatus", currentSmoke, SmokeLimit, "PHÁT HIỆN KHÓI !!!"); // Kiểm tra khói
+            checkAlert("smokeCard", "smokeStatus", currentSmoke, smokeLimit, "PHÁT HIỆN KHÓI !!!"); // Kiểm tra khói
         });
 
         // --- HELPER FUNCTIONS ---
@@ -311,4 +311,5 @@
     </script>
 </body>
 </html>
+
 
