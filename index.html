@@ -283,7 +283,7 @@
             }
         }
 
-        // Update Chart Loop (2s)
+        // Thời gian vẽ từng node
         setInterval(() => {
             let now = new Date().toLocaleTimeString('vi-VN', {hour12: false});
             if (myChart.data.labels.length > 20) {
@@ -295,7 +295,7 @@
             myChart.data.datasets[0].data.push(currentTemp);
             myChart.data.datasets[1].data.push(currentSmoke);
             myChart.update();
-        }, 2000);
+        }, 15000);
 
         // --- BUTTON ACTIONS ---
         function updateThreshold() {
@@ -318,4 +318,5 @@
     </script>
 </body>
 </html>
+
 
