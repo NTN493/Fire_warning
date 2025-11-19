@@ -55,7 +55,7 @@
 
         /* Card Biểu đồ sẽ chiếm trọn 2 cột */
         .chart-card {
-            grid-column: span 2; 
+            grid-column: span 2;
         }
         
         /* Mobile thì biểu đồ cũng về 1 cột */
@@ -175,7 +175,9 @@
             <h2>📈 Biểu đồ theo dõi thời gian thực</h2>
             <div style="position: relative; height: 400px; width: 100%;">
                 <canvas id="myChart"></canvas>
+            </div>
         </div>
+
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -221,21 +223,21 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: false, // Cho phép giãn chiều cao
                 scales: { 
                     y: { 
                         beginAtZero: true,
-                        min: 0,    // Cố định đáy là 0
-                        max: 150,  // Cố định đỉnh là 150 (để biểu đồ thoáng hơn)
+                        min: 0,    
+                        max: 150,  
                         title: {
                             display: true,
                             text: 'Giá trị đo'
                         }
-                    }
-                },
-                animation: false,
-                interaction: { intersect: false, mode: 'index' },
-            }
+                    } 
+                }, // ĐÃ SỬA: Đóng ngoặc scales tại đây
+                animation: false, // Đưa animation ra ngoài scales
+                interaction: { intersect: false, mode: 'index' }
+            } // Đóng ngoặc options
         });
 
         // --- VARIABLES ---
@@ -258,20 +260,21 @@
         db.ref("Threshold").on("value", snap => {
             tempLimit = snap.val();
             document.getElementById("thresholdValue").innerText = tempLimit;
-            checkAlert("tempCard", "tempStatus", currentTemp, tempLimit, "QUÁ NHIỆT !!!"); // Kiểm tra quá nhiệt
+            checkAlert("tempCard", "tempStatus", currentTemp, tempLimit, "QUÁ NHIỆT !!!"); 
         });
 
         db.ref("SmokeThreshold").on("value", snap => {
             smokeLimit = snap.val();
             document.getElementById("smokeThresValue").innerText = smokeLimit;
-            checkAlert("smokeCard", "smokeStatus", currentSmoke, smokeLimit, "PHÁT HIỆN KHÓI !!!"); // Kiểm tra khói
+            checkAlert("smokeCard", "smokeStatus", currentSmoke, smokeLimit, "PHÁT HIỆN KHÓI !!!"); 
         });
 
         // --- HELPER FUNCTIONS ---
         function checkAlert(cardId, statusId, val, limit, msg) {
             let card = document.getElementById(cardId);
             let status = document.getElementById(statusId);
-            if(val >= limit) {
+            
+            if(Number(val) >= Number(limit)) {
                 card.classList.add("alert-mode");
                 status.innerText = "⚠️ " + msg;
             } else {
@@ -294,9 +297,8 @@
             myChart.update();
         }, 2000);
 
-
+        // --- BUTTON ACTIONS ---
         function updateThreshold() {
-
             let val = document.getElementById("newThreshold").value;
             if(val) {
                 db.ref("Threshold").set(Number(val));
@@ -306,7 +308,6 @@
         }
 
         function updateSmokeThreshold() {
-
             let val = document.getElementById("newSmokeThres").value;
             if(val) {
                 db.ref("SmokeThreshold").set(Number(val));
@@ -317,8 +318,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
