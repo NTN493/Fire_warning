@@ -55,7 +55,7 @@
 
         /* Card Biểu đồ sẽ chiếm trọn 2 cột */
         .chart-card {
-            grid-column: span 2;
+            grid-column: span 2; 
         }
         
         /* Mobile thì biểu đồ cũng về 1 cột */
@@ -173,9 +173,9 @@
 
         <div class="card chart-card">
             <h2>📈 Biểu đồ theo dõi thời gian thực</h2>
-            <canvas id="myChart" height="100"></canvas>
+            <div style="position: relative; height: 400px; width: 100%;">
+                <canvas id="myChart"></canvas>
         </div>
-
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -221,7 +221,17 @@
             },
             options: {
                 responsive: true,
-                scales: { y: { beginAtZero: true } },
+                maintainAspectRatio: false,
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        min: 0,    // Cố định đáy là 0
+                        max: 150,  // Cố định đỉnh là 150 (để biểu đồ thoáng hơn)
+                        title: {
+                            display: true,
+                            text: 'Giá trị đo'
+                        }
+                    },
                 animation: false,
                 interaction: { intersect: false, mode: 'index' },
             }
@@ -306,6 +316,7 @@
     </script>
 </body>
 </html>
+
 
 
 
