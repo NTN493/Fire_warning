@@ -247,11 +247,13 @@
         db.ref("Threshold").on("value", snap => {
             tempLimit = snap.val();
             document.getElementById("thresholdValue").innerText = tempLimit;
+            checkAlert("tempCard", "tempStatus", currentTemp, tempLimit, "QUÁ NHIỆT !!!"); // Kiểm tra quá nhiệt
         });
 
         db.ref("SmokeThreshold").on("value", snap => {
             smokeLimit = snap.val();
             document.getElementById("smokeThresValue").innerText = smokeLimit;
+            checkAlert("smokeCard", "smokeStatus", currentSmoke, SmokeLimit, "PHÁT HIỆN KHÓI !!!"); // Kiểm tra khói
         });
 
         // --- HELPER FUNCTIONS ---
@@ -309,3 +311,4 @@
     </script>
 </body>
 </html>
+
