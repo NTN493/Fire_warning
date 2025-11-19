@@ -3,115 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <title>Fire Warning Dashboard</title>
-
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
-
-  // ================= FIREBASE CONFIG =================
-  const firebaseConfig = {
-    apiKey: "AIzaSyAAoqP-5Kkw_sMJOvLzMd9yMZsto86rQBk",
-    authDomain: "fire-warning-3f43e.firebaseapp.com",
-    databaseURL: "https://fire-warning-3f43e-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "fire-warning-3f43e",
-    storageBucket: "fire-warning-3f43e.firebasestorage.app",
-    messagingSenderId: "216206579900",
-    appId: "1:216206579900:web:aa5f46d236923b921418b9",
-    measurementId: "G-1W9TMF3KDL"
-  };
-
-  // ====================================================
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase();
-
-  // Real-time listener
-  onValue(ref(db, "sensor/temp"), (snap) => {
-    document.getElementById("temp").innerHTML = snap.val() + " °C";
-  });
-
-  onValue(ref(db, "sensor/smoke"), (snap) => {
-    document.getElementById("smoke").innerHTML = snap.val();
-  });
-
-  onValue(ref(db, "config/threshold"), (snap) => {
-    document.getElementById("threshold").innerHTML = snap.val() + " °C";
-  });
-
-  // Update threshold from web
-  window.updateThreshold = function () {
-    let th = document.getElementById("newTh").value;
-    if (th !== "") {
-      set(ref(db, "config/threshold"), Number(th));
-      alert("Threshold updated!");
-    }
-  };
-
-</script>
-
 <style>
-  body {
-    background: #111;
-    color: #eee;
-    font-family: Arial;
-    text-align: center;
-    padding-top: 40px;
-  }
-  .box {
-    border: 1px solid #444;
-    padding: 20px;
-    width: 300px;
-    margin: auto;
-    border-radius: 10px;
-    background: #222;
-  }
-  .value {
-    font-size: 32px;
-    font-weight: bold;
-  }
-  button {
-    margin-top: 10px;
-    padding: 10px 20px;
-    background: orange;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  input {
-    padding: 8px;
-    width: 60%;
-    font-size: 16px;
-  }
+    body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #f8f8f8;
+    }
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        max-width: 500px;
+    }
+    h2 { margin-top: 0; }
+    input {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+    button {
+        padding: 10px 15px;
+        margin-top: 10px;
+        font-size: 16px;
+        cursor: pointer;
+    }
 </style>
-
 </head>
-
 <body>
 
-<h1>🔥 FIRE WARNING SYSTEM 🔥</h1>
+<h1>Fire Warning Dashboard</h1>
 
-<div class="box">
-  <h2>Temperature</h2>
-  <div class="value" id="temp">--</div>
+<div class="card">
+    <h2>🔥 Temperature</h2>
+    <div id="tempValue">Loading...</div>
 </div>
 
-<br>
-
-<div class="box">
-  <h2>Smoke Level</h2>
-  <div class="value" id="smoke">--</div>
+<div class="card">
+    <h2>💨 Smoke Sensor</h2>
+    <div id="smokeValue">Loading...</div>
 </div>
 
-<br>
+<div class="card">
+    <h2>⚠ Threshold</h2>
+    <div id="thresholdValue">Loading...</div>
 
-<div class="box">
-  <h2>Threshold</h2>
-  <div class="value" id="threshold">--</div>
-
-  <input id="newTh" type="number" placeholder="New threshold">
-  <button onclick="updateThreshold()">Update</button>
+    <input type="number" id="newThreshold" placeholder="Enter new threshold">
+    <button onclick="updateThreshold()">Update</button>
 </div>
+
+<!-- Firebase v8 COMPAT MODE (bắt buộc để chạy trên GitHub Pages) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+    // CONFIG FIREBASE (ANH DÙNG THÔNG TIN CỦA ANH)
+    const firebaseConfig = {
+        apiKey: "AIzaSyAAoqP-5Kkw_sMJOvLzMd9yMZsto86rQBk",
+        authDomain: "fire-warning-3f43e.firebaseapp.com",
+        databaseURL: "https://fire-warning-3f43e-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "fire-warning-3f43e",
+        storageBucket: "fire-warning-3f43e.firebasestorage.app",
+        messagingSenderId: "216206579900",
+        appId: "1:216206579900:web:aa5f46d236923b921418b9",
+        measurementId: "G-1W9TMF3KDL"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // REALTIME TEMPERATURE
+    db.ref("Temperature").on("value", snapshot => {
+        document.getElementById("tempValue").innerText = snapshot.val() + " °C";
+    });
+
+    // REALTIME SMOKE
+    db.ref("Smoke").on("value", snapshot => {
+        document.getElementById("smokeValue").innerText = snapshot.val();
+    });
+
+    // REALTIME THRESHOLD
+    db.ref("Threshold").on("value", snapshot => {
+        document.getElementById("thresholdValue").innerText = snapshot.val();
+    });
+
+    // UPDATE THRESHOLD
+    function updateThreshold() {
+        let val = document.getElementById("newThreshold").value;
+        if (val === "") {
+            alert("Please enter a number");
+            return;
+        }
+
+        db.ref("Threshold").set(Number(val));
+        alert("Threshold updated!");
+    }
+</script>
 
 </body>
 </html>
