@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fire Warning Dashboard</title>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+
+  // ================= FIREBASE CONFIG =================
+  const firebaseConfig = {
+    apiKey: "AIzaSyAAoqP-5Kkw_sMJOvLzMd9yMZsto86rQBk",
+    authDomain: "fire-warning-3f43e.firebaseapp.com",
+    databaseURL: "https://fire-warning-3f43e-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "fire-warning-3f43e",
+    storageBucket: "fire-warning-3f43e.firebasestorage.app",
+    messagingSenderId: "216206579900",
+    appId: "1:216206579900:web:aa5f46d236923b921418b9",
+    measurementId: "G-1W9TMF3KDL"
+  };
+
+  // ====================================================
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase();
+
+  // Real-time listener
+  onValue(ref(db, "sensor/temp"), (snap) => {
+    document.getElementById("temp").innerHTML = snap.val() + " °C";
+  });
+
+  onValue(ref(db, "sensor/smoke"), (snap) => {
+    document.getElementById("smoke").innerHTML = snap.val();
+  });
+
+  onValue(ref(db, "config/threshold"), (snap) => {
+    document.getElementById("threshold").innerHTML = snap.val() + " °C";
+  });
+
+  // Update threshold from web
+  window.updateThreshold = function () {
+    let th = document.getElementById("newTh").value;
+    if (th !== "") {
+      set(ref(db, "config/threshold"), Number(th));
+      alert("Threshold updated!");
+    }
+  };
+
+</script>
+
+<style>
+  body {
+    background: #111;
+    color: #eee;
+    font-family: Arial;
+    text-align: center;
+    padding-top: 40px;
+  }
+  .box {
+    border: 1px solid #444;
+    padding: 20px;
+    width: 300px;
+    margin: auto;
+    border-radius: 10px;
+    background: #222;
+  }
+  .value {
+    font-size: 32px;
+    font-weight: bold;
+  }
+  button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: orange;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  input {
+    padding: 8px;
+    width: 60%;
+    font-size: 16px;
+  }
+</style>
+
+</head>
+
+<body>
+
+<h1>🔥 FIRE WARNING SYSTEM 🔥</h1>
+
+<div class="box">
+  <h2>Temperature</h2>
+  <div class="value" id="temp">--</div>
+</div>
+
+<br>
+
+<div class="box">
+  <h2>Smoke Level</h2>
+  <div class="value" id="smoke">--</div>
+</div>
+
+<br>
+
+<div class="box">
+  <h2>Threshold</h2>
+  <div class="value" id="threshold">--</div>
+
+  <input id="newTh" type="number" placeholder="New threshold">
+  <button onclick="updateThreshold()">Update</button>
+</div>
+
+</body>
+</html>
