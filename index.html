@@ -37,19 +37,19 @@
 <h1>Fire Warning Dashboard</h1>
 
 <div class="card">
-    <h2>🔥 Temperature</h2>
-    <div id="tempValue">Loading...</div>
+    <h2>🔥 NHIỆT ĐỘ</h2>
+    <div id="tempValue">Đang tải...</div>
 </div>
 
 <div class="card">
-    <h2>💨 Smoke Sensor</h2>
-    <div id="smokeValue">Loading...</div>
+    <h2>💨 MỨC ĐỘ KHÓI</h2>
+    <div id="smokeValue">Đang tải...</div>
 </div>
 
 <div class="card">
-    <h2>⚠ Temperature Threshold</h2>
+    <h2>⚠ Ngưỡng nhiệt độ</h2>
     <div style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">
-        Current: <span id="thresholdValue">Loading...</span>
+        Current: <span id="thresholdValue">Đang tải...</span>
     </div>
 
     <input type="number" id="newThreshold" placeholder="Enter new temperature threshold">
@@ -57,9 +57,9 @@
 </div>
 
 <div class="card">
-    <h2>💨 Smoke Threshold</h2>
+    <h2>💨 Ngưỡng khói</h2>
     <div style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">
-        Current: <span id="smokeThresValue">Loading...</span>
+        Current: <span id="smokeThresValue">Đang tải...</span>
     </div>
 
     <input type="number" id="newSmokeThres" placeholder="Enter new smoke threshold">
@@ -72,65 +72,13 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-    // CONFIG FIREBASE (ANH DÙNG THÔNG TIN CỦA ANH)
+    // CONFIG FIREBASE 
     const firebaseConfig = {
         apiKey: "AIzaSyAAoqP-5Kkw_sMJOvLzMd9yMZsto86rQBk",
         authDomain: "fire-warning-3f43e.firebaseapp.com",
         databaseURL: "https://fire-warning-3f43e-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "fire-warning-3f43e",
-        storageBucket: "fire-warning-3f43e.firebasestorage.app",
-        messagingSenderId: "216206579900",
-        appId: "1:216206579900:web:aa5f46d236923b921418b9",
-        measurementId: "G-1W9TMF3KDL"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // REALTIME TEMPERATURE
-    db.ref("Temperature").on("value", snapshot => {
-        document.getElementById("tempValue").innerText = snapshot.val() + " °C";
-    });
-
-    // REALTIME SMOKE
-    db.ref("Smoke").on("value", snapshot => {
-        document.getElementById("smokeValue").innerText = snapshot.val();
-    });
-
-    // REALTIME TEMPERATURE THRESHOLD
-    db.ref("Threshold").on("value", snapshot => {
-        document.getElementById("thresholdValue").innerText = snapshot.val();
-    });
-    
-    // REALTIME SMOKE THRESHOLD
-    db.ref("SmokeThreshold").on("value", snapshot => {
-        document.getElementById("smokeThresValue").innerText = snapshot.val();
-    });
-
-    // UPDATE THRESHOLD
-    function updateThreshold() {
-        let val = document.getElementById("newThreshold").value;
-        let val = input.value;
-        if (val === "") {
-            alert("Please enter a number");
-            return;
-        }
-    
-        db.ref("Threshold").set(Number(val));
-        alert("Temperature threshold updated!");
-        input.value = ""; // clear giá trị vừa nhập ở ô nhập giá trị
-    }
-    // UPDATE SMOKE_THRESHOLD
-    function updateSmokeThreshold() {
-        let val = document.getElementById("newSmokeThres").value;
-        let val = input.value;
-        if (val === "") {
-            alert("Please enter a number");
-            return;
-        }
-    
-        db.ref("SmokeThreshold").set(Number(val));
-        alert("Smoke threshold updated!");
+        storageBucket: "fire-warning-3f43e.firebasestorage.app",nhật!");
         input.value = ""; // clear giá trị vừa nhập ở ô nhập giá trị
     }
 
@@ -138,6 +86,7 @@
 
 </body>
 </html>
+
 
 
 
