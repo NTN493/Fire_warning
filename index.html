@@ -2,60 +2,71 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Bảng điều khiển cảnh báo cháy</title>
+<title>Fire Warning Dashboard</title>
+
+<!-- ChartJS for realtime graph -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
     body {
         font-family: Arial, sans-serif;
         padding: 20px;
-        background: #f8f8f8;
+        background: #eef2f3;
     }
     .card {
         background: white;
         padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        max-width: 500px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        max-width: 600px;
+    }
+    .alert {
+        animation: blink 0.7s infinite alternate;
+        background-color: #ffb3b3 !important;
+        border-left: 8px solid red;
+    }
+    @keyframes blink {
+        from { background-color: #ffd6d6; }
+        to { background-color: #ff9b9b; }
     }
     h2 { margin-top: 0; }
-    input {
+    input, button {
         width: 100%;
         padding: 10px;
-        font-size: 16px;
         margin-top: 10px;
+        font-size: 16px;
     }
     button {
-        padding: 10px 15px;
-        margin-top: 10px;
-        font-size: 16px;
+        background-color: #007bff;
+        color: white;
         cursor: pointer;
+        border-radius: 8px;
+        border: none;
     }
 </style>
 </head>
 
 <body>
 
-<h1>Bảng điều khiển cảnh báo cháy</h1>
+<h1 style="font-size:32px; font-weight:bold;">🔥 Bảng điều khiển cảnh báo cháy</h1>
 
 <!-- NHIỆT ĐỘ -->
-<div class="card">
-    <h2>🔥 Nhiệt độ</h2>
-    <div id="tempValue">Đang tải...</div>
+<div class="card" id="tempCard">
+    <h2>🌡 Nhiệt độ</h2>
+    <div id="tempValue" style="font-size:26px; font-weight:bold;">Đang tải...</div>
 </div>
 
 <!-- KHÓI -->
-<div class="card">
+<div class="card" id="smokeCard">
     <h2>💨 Mức độ khói</h2>
-    <div id="smokeValue">Đang tải...</div>
+    <div id="smokeValue" style="font-size:26px; font-weight:bold;">Đang tải...</div>
 </div>
 
-<!-- NGƯỠNG NHIỆT ĐỘ -->
+<!-- NGƯỠNG NHIỆT -->
 <div class="card">
     <h2>⚠ Ngưỡng nhiệt độ</h2>
-    <div style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">
-        Hiện tại: <span id="thresholdValue">Đang tải...</span>
-    </div>
+    Hiện tại: <span id="thresholdValue">Đang tải...</span>
 
     <input type="number" id="newThreshold" placeholder="Nhập ngưỡng nhiệt độ mới">
     <button onclick="updateThreshold()">Cập nhật</button>
@@ -64,20 +75,25 @@
 <!-- NGƯỠNG KHÓI -->
 <div class="card">
     <h2>💨 Ngưỡng khói</h2>
-    <div style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">
-        Hiện tại: <span id="smokeThresValue">Đang tải...</span>
-    </div>
+    Hiện tại: <span id="smokeThresValue">Đang tải...</span>
 
     <input type="number" id="newSmokeThres" placeholder="Nhập ngưỡng khói mới">
     <button onclick="updateSmokeThreshold()">Cập nhật</button>
 </div>
 
-<!-- Firebase v8 -->
+<!-- BIỂU ĐỒ REALTIME -->
+<div class="card">
+    <h2>📈 Biểu đồ nhiệt độ & khói (Realtime)</h2>
+    <canvas id="chartJS" height="180"></canvas>
+</div>
+
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-// CẤU HÌNH FIREBASE
+// FIREBASE CONFIG
 const firebaseConfig = {
     apiKey: "AIzaSyAAoqP-5Kkw_sMJOvLzMd9yMZsto86rQBk",
     authDomain: "fire-warning-3f43e.firebaseapp.com",
@@ -86,66 +102,114 @@ const firebaseConfig = {
     storageBucket: "fire-warning-3f43e.firebasestorage.app",
     messagingSenderId: "216206579900",
     appId: "1:216206579900:web:aa5f46d236923b921418b9",
-    measurementId: "G-1W9TMF3KDL"
 };
-
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.database();
 
-// REALTIME: NHIỆT ĐỘ
-db.ref("Temperature").on("value", snapshot => {
-    document.getElementById("tempValue").innerText = snapshot.val() + " °C";
+// -------- BIỂU ĐỒ REALTIME ------------
+let labels = [];
+let tempData = [];
+let smokeData = [];
+
+const ctx = document.getElementById('chartJS').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels,
+        datasets: [
+            {
+                label: "Nhiệt độ (°C)",
+                data: tempData,
+                borderColor: "red",
+                borderWidth: 2
+            },
+            {
+                label: "Khói",
+                data: smokeData,
+                borderColor: "blue",
+                borderWidth: 2
+            }
+        ]
+    },
+    options: {
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
 });
 
-// REALTIME: KHÓI
-db.ref("Smoke").on("value", snapshot => {
-    document.getElementById("smokeValue").innerText = snapshot.val();
+// Hàm cập nhật biểu đồ
+function addChartData(temp, smoke) {
+    let now = new Date().toLocaleTimeString();
+
+    labels.push(now);
+    tempData.push(temp);
+    smokeData.push(smoke);
+
+    if (labels.length > 20) {
+        labels.shift();
+        tempData.shift();
+        smokeData.shift();
+    }
+
+    chart.update();
+}
+
+
+// ----------- REALTIME TEMPERATURE ----------
+let tempThreshold = 0;
+db.ref("Threshold").on("value", snap => {
+    tempThreshold = snap.val();
+    document.getElementById("thresholdValue").innerText = snap.val();
 });
 
-// REALTIME: NGƯỠNG NHIỆT ĐỘ
-db.ref("Threshold").on("value", snapshot => {
-    document.getElementById("thresholdValue").innerText = snapshot.val();
+db.ref("Temperature").on("value", snap => {
+    let t = snap.val();
+    document.getElementById("tempValue").innerHTML = t + " °C";
+
+    // Cảnh báo vượt ngưỡng
+    let card = document.getElementById("tempCard");
+    card.classList.toggle("alert", t >= tempThreshold);
+
+    addChartData(t, null);
 });
 
-// REALTIME: NGƯỠNG KHÓI
-db.ref("SmokeThreshold").on("value", snapshot => {
-    document.getElementById("smokeThresValue").innerText = snapshot.val();
+// ----------- REALTIME SMOKE ----------
+let smokeThreshold = 0;
+db.ref("SmokeThreshold").on("value", snap => {
+    smokeThreshold = snap.val();
+    document.getElementById("smokeThresValue").innerText = snap.val();
 });
 
-// CẬP NHẬT NGƯỠNG NHIỆT ĐỘ
+db.ref("Smoke").on("value", snap => {
+    let s = snap.val();
+    document.getElementById("smokeValue").innerHTML = s;
+
+    let card = document.getElementById("smokeCard");
+    card.classList.toggle("alert", s >= smokeThreshold);
+
+    addChartData(null, s);
+});
+
+// ----------- UPDATE THRESHOLD -----------
 function updateThreshold() {
     let input = document.getElementById("newThreshold");
-    let val = input.value;
+    if (input.value === "") return alert("Nhập giá trị!");
 
-    if (val === "") {
-        alert("Vui lòng nhập giá trị!");
-        return;
-    }
-
-    db.ref("Threshold").set(Number(val));
-    alert("Đã cập nhật ngưỡng nhiệt độ!");
+    db.ref("Threshold").set(Number(input.value));
     input.value = "";
 }
 
-// CẬP NHẬT NGƯỠNG KHÓI
+// ----------- UPDATE SMOKE THRESHOLD -----
 function updateSmokeThreshold() {
     let input = document.getElementById("newSmokeThres");
-    let val = input.value;
+    if (input.value === "") return alert("Nhập giá trị!");
 
-    if (val === "") {
-        alert("Vui lòng nhập giá trị!");
-        return;
-    }
-
-    db.ref("SmokeThreshold").set(Number(val));
-    alert("Đã cập nhật ngưỡng khói!");
+    db.ref("SmokeThreshold").set(Number(input.value));
     input.value = "";
 }
-
 </script>
 
 </body>
 </html>
-
-
-
