@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Fire Warning Dashboard</title>
+<title>Bảng điều khiển cảnh báo cháy</title>
+
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -32,62 +33,116 @@
     }
 </style>
 </head>
+
 <body>
 
-<h1>Fire Warning Dashboard</h1>
+<h1>Bảng điều khiển cảnh báo cháy</h1>
 
+<!-- NHIỆT ĐỘ -->
 <div class="card">
-    <h2>🔥 NHIỆT ĐỘ</h2>
+    <h2>🔥 Nhiệt độ</h2>
     <div id="tempValue">Đang tải...</div>
 </div>
 
+<!-- KHÓI -->
 <div class="card">
-    <h2>💨 MỨC ĐỘ KHÓI</h2>
+    <h2>💨 Mức độ khói</h2>
     <div id="smokeValue">Đang tải...</div>
 </div>
 
+<!-- NGƯỠNG NHIỆT ĐỘ -->
 <div class="card">
     <h2>⚠ Ngưỡng nhiệt độ</h2>
     <div style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">
-        Current: <span id="thresholdValue">Đang tải...</span>
+        Hiện tại: <span id="thresholdValue">Đang tải...</span>
     </div>
 
-    <input type="number" id="newThreshold" placeholder="Enter new temperature threshold">
-    <button onclick="updateThreshold()">Update</button>
+    <input type="number" id="newThreshold" placeholder="Nhập ngưỡng nhiệt độ mới">
+    <button onclick="updateThreshold()">Cập nhật</button>
 </div>
 
+<!-- NGƯỠNG KHÓI -->
 <div class="card">
     <h2>💨 Ngưỡng khói</h2>
     <div style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">
-        Current: <span id="smokeThresValue">Đang tải...</span>
+        Hiện tại: <span id="smokeThresValue">Đang tải...</span>
     </div>
 
-    <input type="number" id="newSmokeThres" placeholder="Enter new smoke threshold">
-    <button onclick="updateSmokeThreshold()">Update</button>
+    <input type="number" id="newSmokeThres" placeholder="Nhập ngưỡng khói mới">
+    <button onclick="updateSmokeThreshold()">Cập nhật</button>
 </div>
 
-
-<!-- Firebase v8 COMPAT MODE (bắt buộc để chạy trên GitHub Pages) -->
+<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-    // CONFIG FIREBASE 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAAoqP-5Kkw_sMJOvLzMd9yMZsto86rQBk",
-        authDomain: "fire-warning-3f43e.firebaseapp.com",
-        databaseURL: "https://fire-warning-3f43e-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "fire-warning-3f43e",
-        storageBucket: "fire-warning-3f43e.firebasestorage.app",nhật!");
-        input.value = ""; // clear giá trị vừa nhập ở ô nhập giá trị
+// CẤU HÌNH FIREBASE
+const firebaseConfig = {
+    apiKey: "AIzaSyAAoqP-5Kkw_sMJOvLzMd9yMZsto86rQBk",
+    authDomain: "fire-warning-3f43e.firebaseapp.com",
+    databaseURL: "https://fire-warning-3f43e-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "fire-warning-3f43e",
+    storageBucket: "fire-warning-3f43e.firebasestorage.app",
+    messagingSenderId: "216206579900",
+    appId: "1:216206579900:web:aa5f46d236923b921418b9",
+    measurementId: "G-1W9TMF3KDL"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// REALTIME: NHIỆT ĐỘ
+db.ref("Temperature").on("value", snapshot => {
+    document.getElementById("tempValue").innerText = snapshot.val() + " °C";
+});
+
+// REALTIME: KHÓI
+db.ref("Smoke").on("value", snapshot => {
+    document.getElementById("smokeValue").innerText = snapshot.val();
+});
+
+// REALTIME: NGƯỠNG NHIỆT ĐỘ
+db.ref("Threshold").on("value", snapshot => {
+    document.getElementById("thresholdValue").innerText = snapshot.val();
+});
+
+// REALTIME: NGƯỠNG KHÓI
+db.ref("SmokeThreshold").on("value", snapshot => {
+    document.getElementById("smokeThresValue").innerText = snapshot.val();
+});
+
+// CẬP NHẬT NGƯỠNG NHIỆT ĐỘ
+function updateThreshold() {
+    let input = document.getElementById("newThreshold");
+    let val = input.value;
+
+    if (val === "") {
+        alert("Vui lòng nhập giá trị!");
+        return;
     }
+
+    db.ref("Threshold").set(Number(val));
+    alert("Đã cập nhật ngưỡng nhiệt độ!");
+    input.value = "";
+}
+
+// CẬP NHẬT NGƯỠNG KHÓI
+function updateSmokeThreshold() {
+    let input = document.getElementById("newSmokeThres");
+    let val = input.value;
+
+    if (val === "") {
+        alert("Vui lòng nhập giá trị!");
+        return;
+    }
+
+    db.ref("SmokeThreshold").set(Number(val));
+    alert("Đã cập nhật ngưỡng khói!");
+    input.value = "";
+}
 
 </script>
 
 </body>
 </html>
-
-
-
-
-
