@@ -129,12 +129,36 @@
         }
         button:hover { background-color: #0056b3; }
 
+        /* --- TRẠNG THÁI KẾT NỐI --- */
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+        .status-online {
+            background-color: #28a745; /* Màu xanh lá */
+            box-shadow: 0 0 10px #28a745;
+        }
+        .status-offline {
+            background-color: #dc3545; /* Màu đỏ */
+            box-shadow: 0 0 10px #dc3545;
+        }
+        
     </style>
 </head>
 <body>
 
     <h1>🔥 Hệ Thống Giám Sát An Toàn</h1>
-
+    
+    <div style="text-align: center;">
+        <span id="connectionStatus" class="status-badge status-offline">🔴 Đang tìm thiết bị...</span>
+    </div>
+    
     <div class="container">
         
         <div class="card" id="tempCard">
@@ -297,6 +321,52 @@
             myChart.update();
         }, 15000);
 
+        // --- LOGIC KIỂM TRA KẾT NỐI (HEARTBEAT) ---
+        let lastUpdate = 0; // Thời điểm cuối cùng nhận được dữ liệu
+        const timeoutLimit = 12000; // 12 giây (Cho phép trễ một chút so với 5s của ESP32)
+
+        function updateConnectionStatus() {
+            let now = Date.now();
+            let statusBadge = document.getElementById("connectionStatus");
+
+            // Nếu thời gian hiện tại - lần cuối cập nhật < 12 giây -> ONLINE
+            if (now - lastUpdate < timeoutLimit) {
+                if (statusBadge.innerText !== "🟢 Đang kết nối") { // Chỉ cập nhật khi trạng thái đổi
+                    statusBadge.className = "status-badge status-online";
+                    statusBadge.innerText = "🟢 Đang kết nối";
+                }
+            } 
+            // Nếu quá lâu không thấy dữ liệu -> OFFLINE
+            else {
+                if (statusBadge.innerText !== "🔴 Mất kết nối (Offline)") {
+                    statusBadge.className = "status-badge status-offline";
+                    statusBadge.innerText = "🔴 Mất kết nối (Offline)";
+                }
+            }
+        }
+
+        // Chạy kiểm tra mỗi 1 giây
+        setInterval(updateConnectionStatus, 1000);
+
+        // --- CẬP NHẬT THỜI GIAN KHI CÓ DỮ LIỆU MỚI ---
+        // Anh SỬA LẠI đoạn lắng nghe Temperature và Smoke như sau:
+        
+        db.ref("Temperature").on("value", snap => {
+            currentTemp = snap.val() || 0;
+            document.getElementById("tempValue").innerText = currentTemp + " °C";
+            checkAlert("tempCard", "tempStatus", currentTemp, tempLimit, "QUÁ NHIỆT !!!");
+            
+            lastUpdate = Date.now(); // <--- THÊM DÒNG NÀY: Đánh dấu vừa nhận tin
+        });
+
+        db.ref("Smoke").on("value", snap => {
+            currentSmoke = snap.val() || 0;
+            document.getElementById("smokeValue").innerText = currentSmoke + " ppm";
+            checkAlert("smokeCard", "smokeStatus", currentSmoke, smokeLimit, "PHÁT HIỆN KHÓI !!!");
+            
+            lastUpdate = Date.now(); // <--- THÊM DÒNG NÀY: Đánh dấu vừa nhận tin
+        });
+        
         // --- BUTTON ACTIONS ---
         function updateThreshold() {
             let val = document.getElementById("newThreshold").value;
@@ -318,5 +388,6 @@
     </script>
 </body>
 </html>
+
 
 
