@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Cảnh Báo Cháy Thông Minh</title>
-
+    
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -25,21 +25,17 @@
         /* --- CẤU TRÚC GRID CHIA 2 CỘT --- */
         .container {
             display: grid;
-            /* Chia làm 2 cột bằng nhau */
             grid-template-columns: 1fr 1fr; 
             gap: 20px;
-            max-width: 1000px; /* Giới hạn chiều rộng cho gọn */
+            max-width: 800px; /* Thu nhỏ lại cho gọn */
             margin: 0 auto;
         }
 
-        /* Mobile thì về 1 cột */
         @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
+            .container { grid-template-columns: 1fr; }
         }
 
-        /* Thẻ Card */
+        /* --- CARD STYLE --- */
         .card {
             background: white;
             padding: 25px;
@@ -49,18 +45,6 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-        }
-
-        /* Card Biểu đồ sẽ chiếm trọn 2 cột */
-        .chart-card {
-            grid-column: span 2;
-        }
-        
-        /* Mobile thì biểu đồ cũng về 1 cột */
-        @media (max-width: 768px) {
-            .chart-card {
-                grid-column: span 1;
-            }
         }
 
         .card h2 {
@@ -85,7 +69,7 @@
             margin-top: 5px;
         }
 
-        /* Cảnh báo đỏ */
+        /* --- CẢNH BÁO ĐỎ --- */
         .alert-mode {
             background-color: #ff4d4d !important;
             color: white !important;
@@ -101,9 +85,9 @@
             100% { transform: scale(1); }
         }
 
-        /* Input và Button */
+        /* --- INPUT & BUTTON --- */
         .control-group {
-            margin-top: auto; /* Đẩy xuống đáy card */
+            margin-top: auto;
             padding-top: 15px;
         }
         input {
@@ -139,11 +123,11 @@
             transition: 0.3s;
         }
         .status-online {
-            background-color: #28a745; /* Màu xanh lá */
+            background-color: #28a745;
             box-shadow: 0 0 10px #28a745;
         }
         .status-offline {
-            background-color: #dc3545; /* Màu đỏ */
+            background-color: #dc3545;
             box-shadow: 0 0 10px #dc3545;
         }
         
@@ -212,36 +196,41 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- VARIABLES ---
-        let currentTemp = 0, currentSmoke = 0;
+        // --- BIẾN LOGIC ---
         let tempLimit = 100, smokeLimit = 100;
 
         // --- FIREBASE LISTENERS ---
         db.ref("Temperature").on("value", snap => {
-            currentTemp = snap.val() || 0;
-            document.getElementById("tempValue").innerText = currentTemp + " °C";
-            checkAlert("tempCard", "tempStatus", currentTemp, tempLimit, "QUÁ NHIỆT !!!");
+            let t = snap.val() || 0;
+            document.getElementById("tempValue").innerText = t + " °C";
+            checkAlert("tempCard", "tempStatus", t, tempLimit, "QUÁ NHIỆT !!!");
+            lastUpdate = Date.now(); // Cập nhật nhịp tim
         });
 
         db.ref("Smoke").on("value", snap => {
-            currentSmoke = snap.val() || 0;
-            document.getElementById("smokeValue").innerText = currentSmoke + " ppm";
-            checkAlert("smokeCard", "smokeStatus", currentSmoke, smokeLimit, "PHÁT HIỆN KHÓI !!!");
+            let s = snap.val() || 0;
+            document.getElementById("smokeValue").innerText = s + " ppm";
+            checkAlert("smokeCard", "smokeStatus", s, smokeLimit, "PHÁT HIỆN KHÓI !!!");
+            lastUpdate = Date.now(); // Cập nhật nhịp tim
         });
 
         db.ref("Threshold").on("value", snap => {
             tempLimit = snap.val();
             document.getElementById("thresholdValue").innerText = tempLimit;
-            checkAlert("tempCard", "tempStatus", currentTemp, tempLimit, "QUÁ NHIỆT !!!"); 
+            // Kiểm tra lại ngay khi ngưỡng đổi
+            let currentTemp = parseFloat(document.getElementById("tempValue").innerText) || 0;
+            checkAlert("tempCard", "tempStatus", currentTemp, tempLimit, "QUÁ NHIỆT !!!");
         });
 
         db.ref("SmokeThreshold").on("value", snap => {
             smokeLimit = snap.val();
             document.getElementById("smokeThresValue").innerText = smokeLimit;
-            checkAlert("smokeCard", "smokeStatus", currentSmoke, smokeLimit, "PHÁT HIỆN KHÓI !!!"); 
+            // Kiểm tra lại ngay khi ngưỡng đổi
+            let currentSmoke = parseFloat(document.getElementById("smokeValue").innerText) || 0;
+            checkAlert("smokeCard", "smokeStatus", currentSmoke, smokeLimit, "PHÁT HIỆN KHÓI !!!");
         });
 
-        // --- HELPER FUNCTIONS ---
+        // --- HÀM CẢNH BÁO ---
         function checkAlert(cardId, statusId, val, limit, msg) {
             let card = document.getElementById(cardId);
             let status = document.getElementById(statusId);
@@ -256,22 +245,19 @@
         }
 
         // --- LOGIC KIỂM TRA KẾT NỐI (HEARTBEAT) ---
-        let lastUpdate = 0; // Thời điểm cuối cùng nhận được dữ liệu
-        const timeoutLimit = 12000; // 12 giây (Cho phép trễ một chút so với 5s của ESP32)
+        let lastUpdate = 0; 
+        const timeoutLimit = 12000; // 12 giây
 
         function updateConnectionStatus() {
             let now = Date.now();
             let statusBadge = document.getElementById("connectionStatus");
 
-            // Nếu thời gian hiện tại - lần cuối cập nhật < 12 giây -> ONLINE
             if (now - lastUpdate < timeoutLimit) {
-                if (statusBadge.innerText !== "🟢 Đang kết nối") { // Chỉ cập nhật khi trạng thái đổi
+                if (statusBadge.innerText !== "🟢 Đang kết nối") {
                     statusBadge.className = "status-badge status-online";
                     statusBadge.innerText = "🟢 Đang kết nối";
                 }
-            } 
-            // Nếu quá lâu không thấy dữ liệu -> OFFLINE
-            else {
+            } else {
                 if (statusBadge.innerText !== "🔴 Mất kết nối (Offline)") {
                     statusBadge.className = "status-badge status-offline";
                     statusBadge.innerText = "🔴 Mất kết nối (Offline)";
@@ -279,29 +265,10 @@
             }
         }
 
-        // Chạy kiểm tra mỗi 1 giây
+        // Kiểm tra kết nối mỗi 1 giây
         setInterval(updateConnectionStatus, 1000);
 
-        // --- CẬP NHẬT THỜI GIAN KHI CÓ DỮ LIỆU MỚI ---
-        // Anh SỬA LẠI đoạn lắng nghe Temperature và Smoke như sau:
-        
-        db.ref("Temperature").on("value", snap => {
-            currentTemp = snap.val() || 0;
-            document.getElementById("tempValue").innerText = currentTemp + " °C";
-            checkAlert("tempCard", "tempStatus", currentTemp, tempLimit, "QUÁ NHIỆT !!!");
-            
-            lastUpdate = Date.now(); // <--- THÊM DÒNG NÀY: Đánh dấu vừa nhận tin
-        });
-
-        db.ref("Smoke").on("value", snap => {
-            currentSmoke = snap.val() || 0;
-            document.getElementById("smokeValue").innerText = currentSmoke + " ppm";
-            checkAlert("smokeCard", "smokeStatus", currentSmoke, smokeLimit, "PHÁT HIỆN KHÓI !!!");
-            
-            lastUpdate = Date.now(); // <--- THÊM DÒNG NÀY: Đánh dấu vừa nhận tin
-        });
-        
-        // --- BUTTON ACTIONS ---
+        // --- XỬ LÝ NÚT BẤM ---
         function updateThreshold() {
             let val = document.getElementById("newThreshold").value;
             if(val) {
@@ -322,7 +289,3 @@
     </script>
 </body>
 </html>
-
-
-
-
