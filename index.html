@@ -198,8 +198,11 @@
 
         // --- BIẾN LOGIC ---
         let tempLimit = 100, smokeLimit = 100;
-
-        // --- FIREBASE LISTENERS ---
+        
+        // --- BIẾN THEO DÕI KẾT NỐI ---
+        let lastUpdate = 0;          // <--- Đưa lên đây
+        const timeoutLimit = 12000;  // 12 giây
+                // --- FIREBASE LISTENERS ---
         db.ref("Temperature").on("value", snap => {
             let t = snap.val() || 0;
             document.getElementById("tempValue").innerText = t + " °C";
@@ -244,10 +247,6 @@
             }
         }
 
-        // --- LOGIC KIỂM TRA KẾT NỐI (HEARTBEAT) ---
-        let lastUpdate = 0; 
-        const timeoutLimit = 12000; // 12 giây
-
         function updateConnectionStatus() {
             let now = Date.now();
             let statusBadge = document.getElementById("connectionStatus");
@@ -289,3 +288,4 @@
     </script>
 </body>
 </html>
+
