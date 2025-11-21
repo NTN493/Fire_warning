@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Cảnh Báo Cháy Thông Minh</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         body {
@@ -195,13 +193,6 @@
             </div>
         </div>
 
-        <div class="card chart-card">
-            <h2>📈 Biểu đồ theo dõi thời gian thực</h2>
-            <div style="position: relative; height: 400px; width: 100%;">
-                <canvas id="myChart"></canvas>
-            </div>
-        </div>
-
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -220,49 +211,6 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
-        // --- CHART SETUP ---
-        const ctx = document.getElementById('myChart').getContext('2d');
-        const myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Nhiệt độ (°C)',
-                    data: [],
-                    borderColor: '#ff6384',
-                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    fill: true
-                }, {
-                    label: 'Khói (PPM)',
-                    data: [],
-                    borderColor: '#36a2eb',
-                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, // Cho phép giãn chiều cao
-                scales: { 
-                    y: { 
-                        beginAtZero: true,
-                        min: 0,    
-                        max: 150,  
-                        title: {
-                            display: true,
-                            text: 'Giá trị đo'
-                        }
-                    } 
-                }, 
-                animation: false, 
-                interaction: { intersect: false, mode: 'index' }
-            } 
-        });
 
         // --- VARIABLES ---
         let currentTemp = 0, currentSmoke = 0;
@@ -306,20 +254,6 @@
                 status.innerText = "Trạng thái: Bình thường";
             }
         }
-
-        // Thời gian vẽ từng node
-        setInterval(() => {
-            let now = new Date().toLocaleTimeString('vi-VN', {hour12: false});
-            if (myChart.data.labels.length > 20) {
-                myChart.data.labels.shift();
-                myChart.data.datasets[0].data.shift();
-                myChart.data.datasets[1].data.shift();
-            }
-            myChart.data.labels.push(now);
-            myChart.data.datasets[0].data.push(currentTemp);
-            myChart.data.datasets[1].data.push(currentSmoke);
-            myChart.update();
-        }, 15000);
 
         // --- LOGIC KIỂM TRA KẾT NỐI (HEARTBEAT) ---
         let lastUpdate = 0; // Thời điểm cuối cùng nhận được dữ liệu
@@ -388,6 +322,7 @@
     </script>
 </body>
 </html>
+
 
 
 
