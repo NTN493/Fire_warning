@@ -83,8 +83,25 @@
         }
 
         /* Alert */
-        .alert-mode { background: #ff4d4d !important; color: white !important; }
-        .alert-mode * { color: white !important; }
+       .alert-mode {
+            background-color: #ff4d4d !important;
+            color: white !important;
+            animation: pulse 1s infinite;
+        }
+        
+        /* Chỉ đổi màu cho các thành phần hiển thị, KHÔNG đổi màu ô nhập liệu */
+        .alert-mode h2, 
+        .alert-mode .value-display, 
+        .alert-mode .status-text,
+        .alert-mode .threshold-box div { /* Thêm dòng này để sửa màu chữ "Ngưỡng hiện tại" */
+            color: white !important;
+        }
+
+        /* Đảm bảo ô nhập liệu luôn có chữ màu đen để dễ nhìn */
+        .alert-mode input {
+            color: #333 !important; 
+            background-color: #fff !important;
+        }
 
         /* Status badge */
         .status-badge {
@@ -102,7 +119,7 @@
 
     <h1>🔥 Hệ Thống Cảnh Báo Cháy Thông Minh</h1>
 
-    <div style="text-align:center;">
+    <div style="text-align:center; margin-bottom: 20px;">
         <span id="connectionStatus" class="status-badge status-offline">🔴 Đang tìm thiết bị...</span>
     </div>
 
@@ -266,3 +283,4 @@
     </script>
 </body>
 </html>
+
