@@ -6,112 +6,168 @@
     <title>Hệ Thống Cảnh Báo Cháy Thông Minh</title>
     
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
-        h1 { text-align: center; color: #d32f2f; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px; }
-        
-        /* Layout 2 cột */
-        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 800px; margin: 0 auto; }
-        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
 
-        /* Card Style */
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; display: flex; flex-direction: column; justify-content: center; }
-        .card h2 { font-size: 16px; color: #888; margin: 0 0 15px 0; font-weight: 600; text-transform: uppercase; }
-        .value-display { font-size: 42px; font-weight: bold; color: #333; margin: 5px 0; }
-        .status-text { font-size: 14px; color: #666; margin-top: 5px; }
+        h1 {
+            text-align: center;
+            color: #d32f2f;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
 
-        /* Alert Mode */
-        .alert-mode { background-color: #ff4d4d !important; color: white !important; animation: pulse 1s infinite; }
-        .alert-mode h2, .alert-mode .value-display, .alert-mode .status-text { color: white !important; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
 
-        /* Controls */
-        .control-group { margin-top: auto; padding-top: 15px; }
-        input { width: 60%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none; font-size: 14px; }
-        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { background-color: #0056b3; }
+        @media (max-width: 768px) { 
+            .container { grid-template-columns: 1fr; } 
+        }
 
-        /* Status Badge */
-        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; color: white; margin-bottom: 20px; transition: 0.3s; }
-        .status-online { background-color: #28a745; box-shadow: 0 0 10px #28a745; }
-        .status-offline { background-color: #dc3545; box-shadow: 0 0 10px #dc3545; }
+        /* CARD */
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .card h2 { 
+            font-size: 18px; 
+            margin-bottom: 10px; 
+            color: #444; 
+        }
+
+        .value-display {
+            font-size: 40px;
+            font-weight: bold;
+            margin: 5px 0 10px 0;
+        }
+
+        .status-text { 
+            font-size: 14px; 
+            color: #666;
+        }
+
+        .threshold-box {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .threshold-box input {
+            width: 65%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .threshold-box button {
+            padding: 10px 15px;
+            border: none;
+            background: #1976d2;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        /* Alert */
+        .alert-mode { background: #ff4d4d !important; color: white !important; }
+        .alert-mode * { color: white !important; }
+
+        /* Status badge */
+        .status-badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+        }
+        .status-offline { background: #d32f2f; }
+        .status-online { background: #2e7d32; }
     </style>
 </head>
+
 <body>
 
-    <h1>🔥 Hệ Thống Giám Sát An Toàn</h1>
-    
-    <div style="text-align: center;">
+    <h1>🔥 Hệ Thống Cảnh Báo Cháy Thông Minh</h1>
+
+    <div style="text-align:center;">
         <span id="connectionStatus" class="status-badge status-offline">🔴 Đang tìm thiết bị...</span>
     </div>
-    
+
     <div class="container">
-        
+
+        <!-- NHIỆT ĐỘ -->
         <div class="card" id="tempCard">
             <h2>🌡 Nhiệt độ</h2>
             <div class="value-display" id="tempValue">-- °C</div>
             <div class="status-text" id="tempStatus">Đang tải...</div>
+
+            <div class="threshold-box">
+                <div>Ngưỡng hiện tại: <b id="thresTemp" style="color:red">--</b></div>
+                <input type="number" id="newThresTemp" placeholder="Mức cảnh báo...">
+                <button onclick="updateVal('Threshold','newThresTemp')">Lưu</button>
+            </div>
         </div>
 
+        <!-- KHÓI -->
         <div class="card" id="smokeCard">
-            <h2>💨 Nồng độ Khói</h2>
+            <h2>💨 Nồng độ khói</h2>
             <div class="value-display" id="smokeValue">-- ppm</div>
             <div class="status-text" id="smokeStatus">Đang tải...</div>
+
+            <div class="threshold-box">
+                <div>Ngưỡng hiện tại: <b id="thresSmoke" style="color:red">--</b></div>
+                <input type="number" id="newThresSmoke" placeholder="Mức cảnh báo...">
+                <button onclick="updateVal('SmokeThreshold','newThresSmoke')">Lưu</button>
+            </div>
         </div>
 
+        <!-- GAS -->
         <div class="card" id="gasCard">
-            <h2>☠ Khí Gas</h2>
+            <h2>☠ Nồng độ Gas</h2>
             <div class="value-display" id="gasValue">-- ppm</div>
             <div class="status-text" id="gasStatus">Đang tải...</div>
+
+            <div class="threshold-box">
+                <div>Ngưỡng hiện tại: <b id="thresGas" style="color:red">--</b></div>
+                <input type="number" id="newThresGas" placeholder="Mức cảnh báo...">
+                <button onclick="updateVal('GasThreshold','newThresGas')">Lưu</button>
+            </div>
         </div>
 
+        <!-- LỬA -->
         <div class="card" id="flameCard">
-            <h2>🔥 Cảm biến Lửa</h2>
+            <h2>🔥 Cảm biến lửa</h2>
             <div class="value-display" id="flameValue">--</div>
             <div class="status-text" id="flameStatus">Đang tải...</div>
-        </div>
 
-        <div class="card">
-            <h2>⚙ Ngưỡng Nhiệt</h2>
-            <div style="margin-bottom:10px;">Hiện tại: <b id="thresTemp" style="color:red">--</b></div>
-            <div class="control-group">
-                <input type="number" id="newThresTemp" placeholder="Mức cảnh báo...">
-                <button onclick="updateVal('Threshold', 'newThresTemp')">Lưu</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>⚙ Ngưỡng Khói</h2>
-            <div style="margin-bottom:10px;">Hiện tại: <b id="thresSmoke" style="color:red">--</b></div>
-            <div class="control-group">
-                <input type="number" id="newThresSmoke" placeholder="Mức cảnh báo...">
-                <button onclick="updateVal('SmokeThreshold', 'newThresSmoke')">Lưu</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>⚙ Ngưỡng Gas</h2>
-            <div style="margin-bottom:10px;">Hiện tại: <b id="thresGas" style="color:red">--</b></div>
-            <div class="control-group">
-                <input type="number" id="newThresGas" placeholder="Mức cảnh báo...">
-                <button onclick="updateVal('GasThreshold', 'newThresGas')">Lưu</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>⚙ Ngưỡng Lửa</h2>
-            <div style="margin-bottom:10px;">Hiện tại: <b id="thresFlame" style="color:red">--</b></div>
-            <div class="control-group">
+            <div class="threshold-box">
+                <div>Ngưỡng hiện tại: <b id="thresFlame" style="color:red">--</b></div>
                 <input type="number" id="newThresFlame" placeholder="Mức cảnh báo...">
-                <button onclick="updateVal('FlameThreshold', 'newThresFlame')">Lưu</button>
+                <button onclick="updateVal('FlameThreshold','newThresFlame')">Lưu</button>
             </div>
         </div>
 
     </div>
 
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
+
         const firebaseConfig = {
             apiKey: "AIzaSyAAoqP-5Kkw_sMJOvLzMd9yMZsto86rQBk",
             authDomain: "fire-warning-3f43e.firebaseapp.com",
@@ -125,104 +181,85 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Biến lưu trữ giá trị hiện tại
         let data = { temp:0, smoke:0, gas:0, flame:0 };
         let limits = { temp:100, smoke:100, gas:100, flame:100 };
         let lastUpdate = 0;
         const timeoutLimit = 12000;
 
-        // --- HÀM CẬP NHẬT GIAO DIỆN CHUNG ---
         function updateUI(type, val, limit, cardId, statusId, unit) {
+            document.getElementById(type + "Value").innerText = val + (unit ? " " + unit : "");
             let card = document.getElementById(cardId);
             let status = document.getElementById(statusId);
-            
-            // Cập nhật số liệu
-            document.getElementById(type + "Value").innerText = val + (unit ? " " + unit : "");
-            
-            // Kiểm tra cảnh báo (Lửa thường ngược lại: Thấp là cháy)
-            let isAlert = false;
-            if (type === 'flame') {
-                isAlert = (val < limit); // Cảm biến lửa: Giá trị càng nhỏ -> Càng gần lửa
-            } else {
-                isAlert = (val >= limit);
-            }
 
-            if(isAlert) {
-                card.classList.add("alert-mode");
-                status.innerText = "⚠️ NGUY HIỂM !!!";
-            } else {
-                card.classList.remove("alert-mode");
-                status.innerText = "Bình thường";
-            }
+            let alert =
+                (type === "flame") ? (val < limit) : (val >= limit);
+
+            if (alert) { card.classList.add("alert-mode"); status.innerText = "⚠️ NGUY HIỂM!!!"; }
+            else { card.classList.remove("alert-mode"); status.innerText = "Bình thường"; }
+
             lastUpdate = Date.now();
         }
 
-        // --- LẮNG NGHE DỮ LIỆU CẢM BIẾN ---
+        // Listener cảm biến
         db.ref("Temperature").on("value", snap => {
             data.temp = snap.val() || 0;
-            updateUI('temp', data.temp, limits.temp, 'tempCard', 'tempStatus', '°C');
+            updateUI("temp", data.temp, limits.temp, "tempCard", "tempStatus", "°C");
         });
 
         db.ref("Smoke").on("value", snap => {
             data.smoke = snap.val() || 0;
-            updateUI('smoke', data.smoke, limits.smoke, 'smokeCard', 'smokeStatus', 'ppm');
+            updateUI("smoke", data.smoke, limits.smoke, "smokeCard", "smokeStatus", "ppm");
         });
 
         db.ref("Gas").on("value", snap => {
             data.gas = snap.val() || 0;
-            updateUI('gas', data.gas, limits.gas, 'gasCard', 'gasStatus', 'ppm');
+            updateUI("gas", data.gas, limits.gas, "gasCard", "gasStatus", "ppm");
         });
 
         db.ref("Flame").on("value", snap => {
-            data.flame = snap.val() || 0; // Giá trị analog 0-4095
-            updateUI('flame', data.flame, limits.flame, 'flameCard', 'flameStatus', '');
+            data.flame = snap.val() || 0;
+            updateUI("flame", data.flame, limits.flame, "flameCard", "flameStatus", "");
         });
 
-        // --- LẮNG NGHE NGƯỠNG CÀI ĐẶT ---
-        db.ref("Threshold").on("value", snap => { 
+        // Listener ngưỡng
+        db.ref("Threshold").on("value", snap => {
             limits.temp = snap.val(); 
             document.getElementById("thresTemp").innerText = limits.temp;
-            updateUI('temp', data.temp, limits.temp, 'tempCard', 'tempStatus', '°C');
-        });
-        db.ref("SmokeThreshold").on("value", snap => { 
-            limits.smoke = snap.val(); 
-            document.getElementById("thresSmoke").innerText = limits.smoke;
-            updateUI('smoke', data.smoke, limits.smoke, 'smokeCard', 'smokeStatus', 'ppm');
-        });
-        db.ref("GasThreshold").on("value", snap => { 
-            limits.gas = snap.val(); 
-            document.getElementById("thresGas").innerText = limits.gas;
-            updateUI('gas', data.gas, limits.gas, 'gasCard', 'gasStatus', 'ppm');
-        });
-        db.ref("FlameThreshold").on("value", snap => { 
-            limits.flame = snap.val(); 
-            document.getElementById("thresFlame").innerText = limits.flame;
-            updateUI('flame', data.flame, limits.flame, 'flameCard', 'flameStatus', '');
         });
 
-        // --- HÀM GỬI DỮ LIỆU LÊN FIREBASE (Dùng chung cho gọn) ---
+        db.ref("SmokeThreshold").on("value", snap => {
+            limits.smoke = snap.val(); 
+            document.getElementById("thresSmoke").innerText = limits.smoke;
+        });
+
+        db.ref("GasThreshold").on("value", snap => {
+            limits.gas = snap.val(); 
+            document.getElementById("thresGas").innerText = limits.gas;
+        });
+
+        db.ref("FlameThreshold").on("value", snap => {
+            limits.flame = snap.val(); 
+            document.getElementById("thresFlame").innerText = limits.flame;
+        });
+
         function updateVal(path, inputId) {
             let val = document.getElementById(inputId).value;
-            if(val) {
+            if (val) {
                 db.ref(path).set(Number(val));
                 alert("Đã lưu thành công!");
                 document.getElementById(inputId).value = "";
             }
         }
 
-        // --- KIỂM TRA KẾT NỐI ---
+        // Kết nối trạng thái
         setInterval(() => {
             let badge = document.getElementById("connectionStatus");
             if (Date.now() - lastUpdate < timeoutLimit) {
-                if (badge.innerText !== "🟢 Đang kết nối") {
-                    badge.className = "status-badge status-online";
-                    badge.innerText = "🟢 Đang kết nối";
-                }
+                badge.className = "status-badge status-online";
+                badge.innerText = "🟢 Đang kết nối";
             } else {
-                if (badge.innerText !== "🔴 Mất kết nối (Offline)") {
-                    badge.className = "status-badge status-offline";
-                    badge.innerText = "🔴 Mất kết nối (Offline)";
-                }
+                badge.className = "status-badge status-offline";
+                badge.innerText = "🔴 Mất kết nối";
             }
         }, 1000);
 
