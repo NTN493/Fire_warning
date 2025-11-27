@@ -76,26 +76,27 @@
             color: red;
             font-weight: bold;
         }
-        /* Alert */
+        /* Alert chỉ cho phần sensor-section */
        .alert-mode {
             background-color: #ff4d4d !important;
             color: white !important;
-            animation: pulse 1.5s infinite;  /* Làm chậm hơn để đỡ chói mắt */
+            animation: pulse 1.5s infinite;
         }
        
-        /* Chỉ đổi màu cho các thành phần hiển thị, KHÔNG đổi màu ô nhập liệu */
+        /* Chỉ đổi màu cho các thành phần hiển thị trong sensor-section */
         .alert-mode h2,
         .alert-mode .value-display,
-        .alert-mode .status-text,
-        .alert-mode .threshold-box div {
+        .alert-mode .status-text {
             color: white !important;
         }
-        /* Override màu giá trị ngưỡng khi alert */
-        .alert-mode .threshold-value {
-            color: white !important;
+        /* Animation pulse */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
         /* Đảm bảo ô nhập liệu luôn có chữ màu đen để dễ nhìn */
-        .alert-mode input {
+        .threshold-box input {
             color: #333 !important;
             background-color: #fff !important;
         }
@@ -117,10 +118,12 @@
     </div>
     <div class="container">
         <!-- NHIỆT ĐỘ -->
-        <div class="card" id="tempCard">
-            <h2>🌡 Nhiệt độ</h2>
-            <div class="value-display" id="tempValue">-- °C</div>
-            <div class="status-text" id="tempStatus">Đang tải...</div>
+        <div class="card">
+            <div class="sensor-section" id="tempSensor">
+                <h2>🌡 Nhiệt độ</h2>
+                <div class="value-display" id="tempValue">-- °C</div>
+                <div class="status-text" id="tempStatus">Đang tải...</div>
+            </div>
             <div class="threshold-box">
                 <div>Ngưỡng hiện tại: <b id="thresTemp" class="threshold-value">--</b></div>
                 <input type="number" id="newThresTemp" placeholder="Mức cảnh báo...">
@@ -128,10 +131,12 @@
             </div>
         </div>
         <!-- KHÓI -->
-        <div class="card" id="smokeCard">
-            <h2>💨 Nồng độ khói</h2>
-            <div class="value-display" id="smokeValue">-- ppm</div>
-            <div class="status-text" id="smokeStatus">Đang tải...</div>
+        <div class="card">
+            <div class="sensor-section" id="smokeSensor">
+                <h2>💨 Nồng độ khói</h2>
+                <div class="value-display" id="smokeValue">-- ppm</div>
+                <div class="status-text" id="smokeStatus">Đang tải...</div>
+            </div>
             <div class="threshold-box">
                 <div>Ngưỡng hiện tại: <b id="thresSmoke" class="threshold-value">--</b></div>
                 <input type="number" id="newThresSmoke" placeholder="Mức cảnh báo...">
@@ -139,10 +144,12 @@
             </div>
         </div>
         <!-- GAS -->
-        <div class="card" id="gasCard">
-            <h2>☠ Nồng độ Gas</h2>
-            <div class="value-display" id="gasValue">-- ppm</div>
-            <div class="status-text" id="gasStatus">Đang tải...</div>
+        <div class="card">
+            <div class="sensor-section" id="gasSensor">
+                <h2>☠ Nồng độ Gas</h2>
+                <div class="value-display" id="gasValue">-- ppm</div>
+                <div class="status-text" id="gasStatus">Đang tải...</div>
+            </div>
             <div class="threshold-box">
                 <div>Ngưỡng hiện tại: <b id="thresGas" class="threshold-value">--</b></div>
                 <input type="number" id="newThresGas" placeholder="Mức cảnh báo...">
@@ -150,10 +157,12 @@
             </div>
         </div>
         <!-- LỬA -->
-        <div class="card" id="flameCard">
-            <h2>🔥 Cảm biến lửa</h2>
-            <div class="value-display" id="flameValue">--</div>
-            <div class="status-text" id="flameStatus">Đang tải...</div>
+        <div class="card">
+            <div class="sensor-section" id="flameSensor">
+                <h2>🔥 Cảm biến lửa</h2>
+                <div class="value-display" id="flameValue">--</div>
+                <div class="status-text" id="flameStatus">Đang tải...</div>
+            </div>
             <div class="threshold-box">
                 <div>Ngưỡng hiện tại: <b id="thresFlame" class="threshold-value">--</b></div>
                 <input type="number" id="newThresFlame" placeholder="Mức cảnh báo...">
@@ -180,32 +189,38 @@
         let limits = { temp:100, smoke:100, gas:100, flame:100 };
         let lastUpdate = 0;
         const timeoutLimit = 12000;
-        function updateUI(type, val, limit, cardId, statusId, unit) {
-            document.getElementById(type + "Value").innerText = val + (unit ? " " + unit : "");
-            let card = document.getElementById(cardId);
+        function updateUI(type, val, limit, sensorId, valueId, statusId, unit) {
+            document.getElementById(valueId).innerText = val + (unit ? " " + unit : "");
+            let sensorSection = document.getElementById(sensorId);
             let status = document.getElementById(statusId);
             let alert =
                 (type === "flame") ? (val < limit) : (val >= limit);
-            if (alert) { card.classList.add("alert-mode"); status.innerText = "⚠️ NGUY HIỂM!!!"; }
-            else { card.classList.remove("alert-mode"); status.innerText = "Bình thường"; }
+            if (alert) { 
+                sensorSection.classList.add("alert-mode"); 
+                status.innerText = "⚠️ NGUY HIỂM!!!"; 
+            }
+            else { 
+                sensorSection.classList.remove("alert-mode"); 
+                status.innerText = "Bình thường"; 
+            }
             lastUpdate = Date.now();
         }
         // Listener cảm biến
         db.ref("Temperature").on("value", snap => {
             data.temp = snap.val() || 0;
-            updateUI("temp", data.temp, limits.temp, "tempCard", "tempStatus", "°C");
+            updateUI("temp", data.temp, limits.temp, "tempSensor", "tempValue", "tempStatus", "°C");
         });
         db.ref("Smoke").on("value", snap => {
             data.smoke = snap.val() || 0;
-            updateUI("smoke", data.smoke, limits.smoke, "smokeCard", "smokeStatus", "ppm");
+            updateUI("smoke", data.smoke, limits.smoke, "smokeSensor", "smokeValue", "smokeStatus", "ppm");
         });
         db.ref("Gas").on("value", snap => {
             data.gas = snap.val() || 0;
-            updateUI("gas", data.gas, limits.gas, "gasCard", "gasStatus", "ppm");
+            updateUI("gas", data.gas, limits.gas, "gasSensor", "gasValue", "gasStatus", "ppm");
         });
         db.ref("Flame").on("value", snap => {
             data.flame = snap.val() || 0;
-            updateUI("flame", data.flame, limits.flame, "flameCard", "flameStatus", "");
+            updateUI("flame", data.flame, limits.flame, "flameSensor", "flameValue", "flameStatus", "");
         });
         // Listener ngưỡng
         db.ref("Threshold").on("value", snap => {
