@@ -6,186 +6,305 @@
 <title>Hệ Thống Cảnh Báo Cháy</title>
 
 <style>
+    :root {
+        --primary: #d32f2f;
+        --warn: #ff4d4d;
+        --ok: #2e7d32;
+        --card-bg: #ffffff;
+        --shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
     body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background-color: #f5f5f7;
         margin: 0;
-        padding: 30px;
+        font-family: 'Segoe UI', sans-serif;
+        background: #f5f6fa;
         color: #333;
     }
 
-    /* --- Title --- */
+    /* ================= LOGIN ================= */
+    #loginScreen {
+        position: fixed; inset:0;
+        display:flex; justify-content:center; align-items:center;
+        background: linear-gradient(135deg, #d32f2f, #1976d2);
+        z-index:1000;
+    }
+    .login-box {
+        width: 330px;
+        background:#fff;
+        padding:35px;
+        border-radius:18px;
+        box-shadow:var(--shadow);
+        text-align:center;
+    }
+    .login-box input {
+        width:100%; padding:12px; margin:10px 0;
+        border-radius:10px; border:1px solid #ccc;
+    }
+    .login-box button {
+        margin-top:10px;
+        width:100%; padding:12px;
+        border:none; border-radius:10px;
+        background:var(--primary); color:#fff; font-weight:bold;
+        cursor:pointer;
+    }
+
+    /* ================= MAIN APP ================= */
+    #mainApp { display:none; padding:25px; max-width:1000px; margin:auto; }
+
     h1 {
-        text-align: center;
-        font-size: 40px;
-        font-weight: 700;
-        margin-bottom: 30px;
-        color: #d32f2f;
+        text-align:center;
+        color:var(--primary);
+        font-size:26px;
+        margin-bottom:20px;
+        font-weight:700;
     }
 
-    /* --- Grid Layout --- */
-    .container {
-        display: grid;
+    /* Connection badge */
+    #connectionStatus {
+        display:inline-block;
+        padding:8px 18px;
+        border-radius:20px;
+        color:#fff;
+        font-weight:600;
+        margin:0 auto 18px auto;
+        display:block;
+        width:max-content;
+    }
+    .status-online { background:var(--ok); }
+    .status-offline { background:var(--primary); }
+
+    /* ================= DASHBOARD LAYOUT ================= */
+    .grid {
+        display:grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 25px;
-        max-width: 1100px;
-        margin: auto;
+        gap:22px;
+    }
+    @media(max-width:800px){
+        .grid { grid-template-columns:1fr; }
     }
 
-    @media (max-width: 900px) {
-        .container { grid-template-columns: 1fr; }
-    }
-
-    /* --- Sensor Card --- */
+    /* ================= SENSOR CARD ================= */
     .card {
-        background: white;
-        padding: 30px;
-        border-radius: 20px;
-        text-align: center;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.07);
-        transition: 0.3s;
+        background:var(--card-bg);
+        padding:25px;
+        border-radius:18px;
+        box-shadow:var(--shadow);
+        transition:0.3s;
+    }
+    .card:hover { transform:translateY(-3px); }
+
+    .card h2 {
+        margin:0 0 8px 0;
+        font-size:17px;
+        font-weight:600;
+        color:#444;
+        display:flex;
+        justify-content:center;
+        gap:6px;
+        align-items:center;
     }
 
-    .card:hover {
-        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-        transform: translateY(-3px);
+    .value {
+        font-size:42px;
+        font-weight:800;
+        margin-top:8px;
+        color:#111;
+    }
+    .value.alert { color:var(--warn); }
+
+    .status {
+        font-size:14px; margin-top:6px;
+        color:#666;
     }
 
-    /* --- Sensor title --- */
-    .sensor-title {
-        font-size: 26px;              /* chữ to theo style Apple */
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #222;
+    /* Threshold area */
+    .thres-box {
+        margin-top:15px;
+        padding-top:12px;
+        border-top:1px solid #ddd;
     }
-
-    /* --- Value Display --- */
-    .value-display {
-        font-size: 50px;
-        font-weight: 700;
-        margin: 5px 0;
-        color: #111;
+    .thres-box input {
+        padding:8px 10px;
+        width:60%;
+        border:1px solid #bbb;
+        border-radius:10px;
     }
-
-    /* --- Status Text --- */
-    .status-text {
-        font-size: 18px;
-        margin-bottom: 15px;
-        color: #666;
-    }
-
-    /* --- Threshold Section --- */
-    .threshold-label {
-        font-size: 18px;
-        margin-top: 10px;
-    }
-
-    .threshold-value {
-        color: #d32f2f;
-        font-size: 22px;
-        font-weight: bold;
-        margin-bottom: 15px;
-    }
-
-    input {
-        width: 70%;
-        padding: 12px;
-        border-radius: 12px;
-        border: 1px solid #ccc;
-        font-size: 16px;
-        text-align: center;
-        margin-bottom: 10px;
-    }
-
-    button {
-        padding: 10px 25px;
-        background: #1976d2;
-        color: white;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 16px;
-        transition: 0.2s;
-    }
-
-    button:hover {
-        background: #0d47a1;
-    }
-
-    /* --- Alert Mode --- */
-    .alert {
-        background-color: #ff4d4d !important;
-        color: white !important;
-    }
-
-    .alert .value-display {
-        color: white !important;
+    .thres-box button {
+        padding:8px 14px;
+        background:#1976d2; color:#fff;
+        border:none; border-radius:10px;
+        margin-left:6px; cursor:pointer;
     }
 
 </style>
 </head>
 <body>
 
-<h1>🔥 HỆ THỐNG CẢNH BÁO CHÁY</h1>
-
-<div class="container">
-
-    <!-- NHIỆT ĐỘ -->
-    <div class="card" id="tempCard">
-        <div class="sensor-title">🌡 Nhiệt độ</div>
-        <div class="value-display" id="tempValue">-- °C</div>
-        <div class="status-text" id="tempStatus">Đang tải...</div>
-        
-        <div class="threshold-label">Ngưỡng:</div>
-        <div class="threshold-value" id="thresTemp">--</div>
-
-        <input type="number" id="newThresTemp" placeholder="Đặt mức...">
-        <button onclick="updateVal('Threshold','newThresTemp')">Lưu</button>
+<!-- ================= LOGIN ================= -->
+<div id="loginScreen">
+    <div class="login-box">
+        <h2>🔐 Đăng nhập</h2>
+        <input id="email" type="email" placeholder="Email">
+        <input id="password" type="password" placeholder="Mật khẩu">
+        <button onclick="login()">Vào hệ thống</button>
+        <p id="loginError" style="color:red; font-size:13px; display:none;"></p>
     </div>
-
-    <!-- KHÓI -->
-    <div class="card" id="smokeCard">
-        <div class="sensor-title">💨 Nồng độ khói</div>
-        <div class="value-display" id="smokeValue">-- ppm</div>
-        <div class="status-text" id="smokeStatus">Đang tải...</div>
-
-        <div class="threshold-label">Ngưỡng:</div>
-        <div class="threshold-value" id="thresSmoke">--</div>
-
-        <input type="number" id="newThresSmoke" placeholder="Đặt mức...">
-        <button onclick="updateVal('SmokeThreshold','newThresSmoke')">Lưu</button>
-    </div>
-
-    <!-- GAS -->
-    <div class="card" id="gasCard">
-        <div class="sensor-title">☠ Gas</div>
-        <div class="value-display" id="gasValue">-- ppm</div>
-        <div class="status-text" id="gasStatus">Đang tải...</div>
-
-        <div class="threshold-label">Ngưỡng:</div>
-        <div class="threshold-value" id="thresGas">--</div>
-
-        <!-- FIX: thêm placeholder "Đặt mức..." -->
-        <input type="number" id="newThresGas" placeholder="Đặt mức...">
-        <button onclick="updateVal('GasThreshold','newThresGas')">Lưu</button>
-    </div>
-
-    <!-- LỬA -->
-    <div class="card" id="flameCard">
-        <div class="sensor-title">🔥 Cảm biến lửa</div>
-        <div class="value-display" id="flameValue">--</div>
-        <div class="status-text" id="flameStatus">Đang tải...</div>
-
-        <div class="threshold-label">Ngưỡng:</div>
-        <div class="threshold-value" id="thresFlame">--</div>
-
-        <!-- FIX: thêm placeholder -->
-        <input type="number" id="newThresFlame" placeholder="Đặt mức...">
-        <button onclick="updateVal('FlameThreshold','newThresFlame')">Lưu</button>
-    </div>
-
 </div>
 
+<!-- ================= APP ================= -->
+<div id="mainApp">
+    <h1>🔥 Hệ Thống Cảnh Báo Cháy</h1>
+
+    <span id="connectionStatus" class="status-offline">🔴 Mất kết nối</span>
+
+    <div class="grid">
+
+        <!-- Temperature -->
+        <div class="card">
+            <h2>🌡 Nhiệt độ</h2>
+            <div class="value" id="tempValue">--</div>
+            <div class="status" id="tempStatus">Đang tải...</div>
+            <div class="thres-box">
+                Ngưỡng: <b id="thresTemp" style="color:#d32f2f">--</b>
+                <br><br>
+                <input id="newThresTemp" type="number" placeholder="Đặt mức">
+                <button onclick="updateVal('Threshold','newThresTemp')">Lưu</button>
+            </div>
+        </div>
+
+        <!-- Gas -->
+        <div class="card">
+            <h2>☠ Gas</h2>
+            <div class="value" id="gasValue">--</div>
+            <div class="status" id="gasStatus">Đang tải...</div>
+            <div class="thres-box">
+                Ngưỡng: <b id="thresGas" style="color:#d32f2f">--</b>
+                <br><br>
+                <input id="newThresGas" type="number">
+                <button onclick="updateVal('GasThreshold','newThresGas')">Lưu</button>
+            </div>
+        </div>
+
+        <!-- Flame -->
+        <div class="card">
+            <h2>🔥 Lửa</h2>
+            <div class="value" id="flameValue">--</div>
+            <div class="status" id="flameStatus">Đang tải...</div>
+            <div class="thres-box">
+                Ngưỡng: <b id="thresFlame" style="color:#d32f2f">--</b>
+                <br><br>
+                <input id="newThresFlame" type="number">
+                <button onclick="updateVal('FlameThreshold','newThresFlame')">Lưu</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+/* ================= FIREBASE SETUP ================= */
+const firebaseConfig = {
+    apiKey: "AIzaSyAAoqP-5Kkw_sMJOvLzMd9yMZsto86rQBk",
+    authDomain: "fire-warning-3f43e.firebaseapp.com",
+    databaseURL: "https://fire-warning-3f43e-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "fire-warning-3f43e",
+    storageBucket: "fire-warning-3f43e.firebasestorage.app",
+    messagingSenderId: "216206579900",
+    appId: "1:216206579900:web:aa5f46d236923b921418b9"
+};
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+const auth = firebase.auth();
+
+/* ================= LOGIN ================= */
+function login(){
+    let email = email.value;
+    let pass = password.value;
+
+    auth.signInWithEmailAndPassword(email,pass)
+    .catch(()=> {
+        loginError.innerText = "Sai email hoặc mật khẩu!";
+        loginError.style.display="block";
+    });
+}
+auth.onAuthStateChanged(user=>{
+    if(user){
+        loginScreen.style.display="none";
+        mainApp.style.display="block";
+    }else{
+        loginScreen.style.display="flex";
+        mainApp.style.display="none";
+    }
+});
+
+/* ================= SENSOR UPDATE ================= */
+let limits = { temp:100, gas:100, flame:100 };
+let lastUpdate = 0;
+const timeoutLimit = 10000;
+
+function updateUI(type,val,limit,valueId,statusId){
+    const valueEl = document.getElementById(valueId);
+    const statusEl = document.getElementById(statusId);
+
+    valueEl.innerText = val;
+
+    let alert = (type==="flame") ? val < limit : val >= limit;
+
+    if(alert){
+        valueEl.classList.add("alert");
+        statusEl.innerText="⚠️ Nguy hiểm!";
+    } else {
+        valueEl.classList.remove("alert");
+        statusEl.innerText="Bình thường";
+    }
+
+    lastUpdate = Date.now();
+}
+
+db.ref("Temperature").on("value",snap=>{
+    let v=snap.val()||0;
+    updateUI("temp",v,limits.temp,"tempValue","tempStatus");
+});
+db.ref("Gas").on("value",snap=>{
+    let v=snap.val()||0;
+    updateUI("gas",v,limits.gas,"gasValue","gasStatus");
+});
+db.ref("Flame").on("value",snap=>{
+    let v=snap.val()||0;
+    updateUI("flame",v,limits.flame,"flameValue","flameStatus");
+});
+
+/* Threshold listeners */
+db.ref("Threshold").on("value",s=>{ limits.temp=s.val(); thresTemp.innerText=s.val();});
+db.ref("GasThreshold").on("value",s=>{ limits.gas=s.val(); thresGas.innerText=s.val();});
+db.ref("FlameThreshold").on("value",s=>{ limits.flame=s.val(); thresFlame.innerText=s.val();});
+
+/* Save threshold */
+function updateVal(path,inputId){
+    let v = Number(document.getElementById(inputId).value);
+    if(!v) return;
+    db.ref(path).set(v);
+    document.getElementById(inputId).value="";
+}
+
+/* Connection monitor */
+setInterval(()=>{
+    let badge = connectionStatus;
+    if(Date.now()-lastUpdate < timeoutLimit){
+        badge.className="status-online";
+        badge.innerText="🟢 Đang kết nối";
+    } else {
+        badge.className="status-offline";
+        badge.innerText="🔴 Mất kết nối";
+    }
+},1000);
+
+</script>
 </body>
 </html>
