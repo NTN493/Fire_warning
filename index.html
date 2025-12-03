@@ -77,8 +77,27 @@
     .card {
         background:var(--card-bg); padding:25px;
         border-radius:18px; box-shadow:var(--shadow); transition:0.3s;
+        /* Thêm viền trong suốt để tránh giật khi thêm border alert */
+        border: 2px solid transparent; 
     }
     .card:hover { transform:translateY(-3px); }
+    
+    /* --- CSS MỚI: Giao diện cảnh báo --- */
+    .card-alert {
+        background-color: #ffebee; /* Nền màu đỏ nhạt */
+        border-color: var(--warn); /* Viền màu đỏ */
+        box-shadow: 0 8px 25px rgba(255, 77, 77, 0.2); /* Bóng đổ màu đỏ */
+    }
+    /* Đổi màu chữ khi có cảnh báo cho nổi bật trên nền đỏ */
+    .card-alert h2,
+    .card-alert .value {
+        color: #c62828; /* Màu đỏ đậm */
+    }
+    .card-alert .status {
+        color: var(--warn);
+        font-weight: bold;
+    }
+
     .card h2 {
         margin:0 0 8px 0; font-size:17px; font-weight:600; color:#444;
         display:flex; justify-content:center; gap:6px; align-items:center;
@@ -86,12 +105,20 @@
     .value {
         font-size:42px; font-weight:800; margin-top:8px; color:#111;
     }
-    .value.alert { color:var(--warn); }
     .status { font-size:14px; margin-top:6px; color:#666; }
-    /* Threshold area */
+    
+    /* Threshold area - Đã sửa để giữ nền trắng */
     .thres-box {
-        margin-top:15px; padding-top:12px; border-top:1px solid #ddd;
+        margin-top:15px; padding:15px; /* Tăng padding */
+        background-color: #ffffff; /* Luôn giữ nền trắng */
+        border-radius: 12px; /* Bo góc */
+        border: 1px solid #eee; /* Viền nhẹ */
     }
+    /* Khi card bị alert, làm nổi bật nhẹ viền box ngưỡng */
+    .card-alert .thres-box {
+        border-color: #ffcdd2;
+    }
+
     .thres-box input {
         padding:8px 10px; width:60%; border:1px solid #bbb; border-radius:10px;
     }
@@ -191,7 +218,7 @@ auth.onAuthStateChanged(user=>{
     }
 });
 
-/* ================= SENSOR UPDATE ================= */
+/* ================= SENSOR UPDATE (ĐÃ SỬA) ================= */
 let limits = { temp:100, gas:100, flame:100 };
 let lastUpdate = 0;
 const timeoutLimit = 10000;
@@ -199,16 +226,21 @@ const timeoutLimit = 10000;
 function updateUI(type,val,limit,valueId,statusId){
     const valueEl = document.getElementById(valueId);
     const statusEl = document.getElementById(statusId);
+    // Lấy phần tử thẻ card cha
+    const cardEl = valueEl.closest('.card');
+
     valueEl.innerText = val;
     
     // Logic: Flame < Limit là cháy, còn lại > Limit là cháy
     let alert = (type==="flame") ? val < limit : val >= limit;
     
     if(alert){
-        valueEl.classList.add("alert");
+        // Thêm class cảnh báo cho cả card
+        cardEl.classList.add("card-alert");
         statusEl.innerText="⚠️ Nguy hiểm!";
     } else {
-        valueEl.classList.remove("alert");
+        // Xóa class cảnh báo
+        cardEl.classList.remove("card-alert");
         statusEl.innerText="Bình thường";
     }
     lastUpdate = Date.now();
@@ -230,47 +262,24 @@ db.ref("Threshold").on("value",s=>{ limits.temp=s.val(); document.getElementById
 db.ref("GasThreshold").on("value",s=>{ limits.gas=s.val(); document.getElementById('thresGas').innerText=s.val();});
 db.ref("FlameThreshold").on("value",s=>{ limits.flame=s.val(); document.getElementById('thresFlame').innerText=s.val();});
 
-/* ================= [QUAN TRỌNG] HÀM LƯU NGƯỠNG ĐÃ SỬA ================= */
+/* ================= SAVE THRESHOLD ================= */
 function updateVal(path, inputId){
     let rawVal = document.getElementById(inputId).value;
-    
-    // 1. Kiểm tra nhập rỗng
-    if(rawVal === "") {
-        alert("Vui lòng nhập giá trị!");
-        return;
-    }
-
+    if(rawVal === "") { alert("Vui lòng nhập giá trị!"); return; }
     let v = Number(rawVal);
-    let min = 0, max = 0;
-    let label = "";
+    let min = 0, max = 0; let label = "";
+    if(path === 'Threshold') { min = 0; max = 100; label = "Nhiệt độ"; } 
+    else if (path === 'GasThreshold') { min = 100; max = 4000; label = "Khí Gas"; }
+    else if (path === 'FlameThreshold') { min = 0; max = 4095; label = "Cảm biến Lửa"; }
 
-    // 2. Xác định giới hạn dựa trên đường dẫn (path)
-    if(path === 'Threshold') { // Nhiệt độ
-        min = 0; max = 100;
-        label = "Nhiệt độ";
-    } 
-    else if (path === 'GasThreshold') { // Gas
-        min = 100; max = 4000;
-        label = "Khí Gas";
-    }
-    else if (path === 'FlameThreshold') { // Lửa
-        min = 0; max = 4095;
-        label = "Cảm biến Lửa";
-    }
-
-    // 3. Kiểm tra Min-Max
     if (v < min || v > max) {
         alert("LỖI: Giá trị " + label + " phải nằm trong khoảng " + min + " đến " + max + "!");
-        return; // Dừng lại, không gửi
+        return;
     }
-
-    // 4. Nếu OK thì mới gửi
     db.ref(path).set(v).then(() => {
         alert("Đã cập nhật " + label + " thành công!");
         document.getElementById(inputId).value="";
-    }).catch((e) => {
-        alert("Lỗi kết nối mạng!");
-    });
+    }).catch((e) => { alert("Lỗi kết nối mạng!"); });
 }
 
 /* Connection monitor */
