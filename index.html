@@ -55,92 +55,53 @@
     }
     /* Logout button */
     #logoutBtn {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        padding: 8px 16px;
-        background: #555;
-        color: #fff;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: bold;
+        position: absolute; top: 20px; right: 20px;
+        padding: 8px 16px; background: #555; color: #fff;
+        border: none; border-radius: 10px; cursor: pointer; font-weight: bold;
     }
     #logoutBtn:hover { background: #333; }
     /* Connection badge */
     #connectionStatus {
-        display:inline-block;
-        padding:8px 18px;
-        border-radius:20px;
-        color:#fff;
-        font-weight:600;
-        margin:0 auto 18px auto;
-        display:block;
-        width:max-content;
+        display:inline-block; padding:8px 18px; border-radius:20px;
+        color:#fff; font-weight:600; margin:0 auto 18px auto;
+        display:block; width:max-content;
     }
     .status-online { background:var(--ok); }
     .status-offline { background:var(--primary); }
     /* ================= DASHBOARD LAYOUT ================= */
     .grid {
-        display:grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap:22px;
+        display:grid; grid-template-columns: repeat(3, 1fr); gap:22px;
     }
-    @media(max-width:800px){
-        .grid { grid-template-columns:1fr; }
-    }
+    @media(max-width:800px){ .grid { grid-template-columns:1fr; } }
     /* ================= SENSOR CARD ================= */
     .card {
-        background:var(--card-bg);
-        padding:25px;
-        border-radius:18px;
-        box-shadow:var(--shadow);
-        transition:0.3s;
+        background:var(--card-bg); padding:25px;
+        border-radius:18px; box-shadow:var(--shadow); transition:0.3s;
     }
     .card:hover { transform:translateY(-3px); }
     .card h2 {
-        margin:0 0 8px 0;
-        font-size:17px;
-        font-weight:600;
-        color:#444;
-        display:flex;
-        justify-content:center;
-        gap:6px;
-        align-items:center;
+        margin:0 0 8px 0; font-size:17px; font-weight:600; color:#444;
+        display:flex; justify-content:center; gap:6px; align-items:center;
     }
     .value {
-        font-size:42px;
-        font-weight:800;
-        margin-top:8px;
-        color:#111;
+        font-size:42px; font-weight:800; margin-top:8px; color:#111;
     }
     .value.alert { color:var(--warn); }
-    .status {
-        font-size:14px; margin-top:6px;
-        color:#666;
-    }
+    .status { font-size:14px; margin-top:6px; color:#666; }
     /* Threshold area */
     .thres-box {
-        margin-top:15px;
-        padding-top:12px;
-        border-top:1px solid #ddd;
+        margin-top:15px; padding-top:12px; border-top:1px solid #ddd;
     }
     .thres-box input {
-        padding:8px 10px;
-        width:60%;
-        border:1px solid #bbb;
-        border-radius:10px;
+        padding:8px 10px; width:60%; border:1px solid #bbb; border-radius:10px;
     }
     .thres-box button {
-        padding:8px 14px;
-        background:#1976d2; color:#fff;
-        border:none; border-radius:10px;
-        margin-left:6px; cursor:pointer;
+        padding:8px 14px; background:#1976d2; color:#fff;
+        border:none; border-radius:10px; margin-left:6px; cursor:pointer;
     }
 </style>
 </head>
 <body>
-<!-- ================= LOGIN ================= -->
 <div id="loginScreen">
     <div class="login-box">
         <h2>🔐 Đăng nhập</h2>
@@ -150,13 +111,11 @@
         <p id="loginError" style="color:red; font-size:13px; display:none;"></p>
     </div>
 </div>
-<!-- ================= APP ================= -->
 <div id="mainApp">
     <button id="logoutBtn" onclick="logout()">Đăng xuất</button>
     <h1>🔥 Hệ Thống Cảnh Báo Cháy</h1>
     <span id="connectionStatus" class="status-offline">🔴 Mất kết nối</span>
     <div class="grid">
-        <!-- Temperature -->
         <div class="card">
             <h2>🌡 Nhiệt độ</h2>
             <div class="value" id="tempValue">--</div>
@@ -164,11 +123,10 @@
             <div class="thres-box">
                 Ngưỡng: <b id="thresTemp" style="color:#d32f2f">--</b>
                 <br><br>
-                <input id="newThresTemp" type="number" placeholder="Đặt mức">
+                <input id="newThresTemp" type="number" placeholder="0-100" min="0" max="100">
                 <button onclick="updateVal('Threshold','newThresTemp')">Lưu</button>
             </div>
         </div>
-        <!-- Gas -->
         <div class="card">
             <h2>☠ Gas</h2>
             <div class="value" id="gasValue">--</div>
@@ -176,11 +134,10 @@
             <div class="thres-box">
                 Ngưỡng: <b id="thresGas" style="color:#d32f2f">--</b>
                 <br><br>
-                <input id="newThresGas" type="number">
+                <input id="newThresGas" type="number" placeholder="100-4000" min="100" max="4000">
                 <button onclick="updateVal('GasThreshold','newThresGas')">Lưu</button>
             </div>
         </div>
-        <!-- Flame -->
         <div class="card">
             <h2>🔥 Lửa</h2>
             <div class="value" id="flameValue">--</div>
@@ -188,13 +145,12 @@
             <div class="thres-box">
                 Ngưỡng: <b id="thresFlame" style="color:#d32f2f">--</b>
                 <br><br>
-                <input id="newThresFlame" type="number">
+                <input id="newThresFlame" type="number" placeholder="0-4095" min="0" max="4095">
                 <button onclick="updateVal('FlameThreshold','newThresFlame')">Lưu</button>
             </div>
         </div>
     </div>
 </div>
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -212,37 +168,42 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
+
 /* ================= LOGIN / LOGOUT ================= */
 function login(){
     let email = document.getElementById('email').value;
     let pass = document.getElementById('password').value;
     auth.signInWithEmailAndPassword(email,pass)
     .catch(()=> {
-        loginError.innerText = "Sai email hoặc mật khẩu!";
-        loginError.style.display="block";
+        let err = document.getElementById('loginError');
+        err.innerText = "Sai email hoặc mật khẩu!";
+        err.style.display="block";
     });
 }
-function logout(){
-    auth.signOut();
-}
+function logout(){ auth.signOut(); }
 auth.onAuthStateChanged(user=>{
     if(user){
-        loginScreen.style.display="none";
-        mainApp.style.display="block";
+        document.getElementById('loginScreen').style.display="none";
+        document.getElementById('mainApp').style.display="block";
     }else{
-        loginScreen.style.display="flex";
-        mainApp.style.display="none";
+        document.getElementById('loginScreen').style.display="flex";
+        document.getElementById('mainApp').style.display="none";
     }
 });
+
 /* ================= SENSOR UPDATE ================= */
 let limits = { temp:100, gas:100, flame:100 };
 let lastUpdate = 0;
 const timeoutLimit = 10000;
+
 function updateUI(type,val,limit,valueId,statusId){
     const valueEl = document.getElementById(valueId);
     const statusEl = document.getElementById(statusId);
     valueEl.innerText = val;
+    
+    // Logic: Flame < Limit là cháy, còn lại > Limit là cháy
     let alert = (type==="flame") ? val < limit : val >= limit;
+    
     if(alert){
         valueEl.classList.add("alert");
         statusEl.innerText="⚠️ Nguy hiểm!";
@@ -252,32 +213,69 @@ function updateUI(type,val,limit,valueId,statusId){
     }
     lastUpdate = Date.now();
 }
+
+// Lắng nghe dữ liệu
 db.ref("Temperature").on("value",snap=>{
-    let v=snap.val()||0;
-    updateUI("temp",v,limits.temp,"tempValue","tempStatus");
+    let v=snap.val()||0; updateUI("temp",v,limits.temp,"tempValue","tempStatus");
 });
 db.ref("Gas").on("value",snap=>{
-    let v=snap.val()||0;
-    updateUI("gas",v,limits.gas,"gasValue","gasStatus");
+    let v=snap.val()||0; updateUI("gas",v,limits.gas,"gasValue","gasStatus");
 });
 db.ref("Flame").on("value",snap=>{
-    let v=snap.val()||0;
-    updateUI("flame",v,limits.flame,"flameValue","flameStatus");
+    let v=snap.val()||0; updateUI("flame",v,limits.flame,"flameValue","flameStatus");
 });
-/* Threshold listeners */
-db.ref("Threshold").on("value",s=>{ limits.temp=s.val(); thresTemp.innerText=s.val();});
-db.ref("GasThreshold").on("value",s=>{ limits.gas=s.val(); thresGas.innerText=s.val();});
-db.ref("FlameThreshold").on("value",s=>{ limits.flame=s.val(); thresFlame.innerText=s.val();});
-/* Save threshold */
-function updateVal(path,inputId){
-    let v = Number(document.getElementById(inputId).value);
-    if(!v) return;
-    db.ref(path).set(v);
-    document.getElementById(inputId).value="";
+
+// Lắng nghe ngưỡng
+db.ref("Threshold").on("value",s=>{ limits.temp=s.val(); document.getElementById('thresTemp').innerText=s.val();});
+db.ref("GasThreshold").on("value",s=>{ limits.gas=s.val(); document.getElementById('thresGas').innerText=s.val();});
+db.ref("FlameThreshold").on("value",s=>{ limits.flame=s.val(); document.getElementById('thresFlame').innerText=s.val();});
+
+/* ================= [QUAN TRỌNG] HÀM LƯU NGƯỠNG ĐÃ SỬA ================= */
+function updateVal(path, inputId){
+    let rawVal = document.getElementById(inputId).value;
+    
+    // 1. Kiểm tra nhập rỗng
+    if(rawVal === "") {
+        alert("Vui lòng nhập giá trị!");
+        return;
+    }
+
+    let v = Number(rawVal);
+    let min = 0, max = 0;
+    let label = "";
+
+    // 2. Xác định giới hạn dựa trên đường dẫn (path)
+    if(path === 'Threshold') { // Nhiệt độ
+        min = 0; max = 100;
+        label = "Nhiệt độ";
+    } 
+    else if (path === 'GasThreshold') { // Gas
+        min = 100; max = 4000;
+        label = "Khí Gas";
+    }
+    else if (path === 'FlameThreshold') { // Lửa
+        min = 0; max = 4095;
+        label = "Cảm biến Lửa";
+    }
+
+    // 3. Kiểm tra Min-Max
+    if (v < min || v > max) {
+        alert("LỖI: Giá trị " + label + " phải nằm trong khoảng " + min + " đến " + max + "!");
+        return; // Dừng lại, không gửi
+    }
+
+    // 4. Nếu OK thì mới gửi
+    db.ref(path).set(v).then(() => {
+        alert("Đã cập nhật " + label + " thành công!");
+        document.getElementById(inputId).value="";
+    }).catch((e) => {
+        alert("Lỗi kết nối mạng!");
+    });
 }
+
 /* Connection monitor */
 setInterval(()=>{
-    let badge = connectionStatus;
+    let badge = document.getElementById('connectionStatus');
     if(Date.now()-lastUpdate < timeoutLimit){
         badge.className="status-online";
         badge.innerText="🟢 Đang kết nối";
