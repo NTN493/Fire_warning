@@ -82,32 +82,12 @@
     }
     .card:hover { transform:translateY(-3px); }
     
-    /* --- CSS MỚI: Tạo hiệu ứng nhấp nháy (thở) --- */
-    @keyframes pulse-red {
-      0% {
-        background-color: #ffebee; /* Màu nền đỏ nhạt hiện tại */
-        box-shadow: 0 8px 25px rgba(255, 77, 77, 0.2);
-      }
-      50% {
-        background-color: #ffcdd2; /* Đậm hơn một chút để tạo nhịp */
-        box-shadow: 0 8px 35px rgba(255, 77, 77, 0.4); /* Bóng to hơn chút */
-      }
-      100% {
-        background-color: #ffebee;
-        box-shadow: 0 8px 25px rgba(255, 77, 77, 0.2);
-      }
-    }
-
-    /* Giao diện cảnh báo (Đã thêm animation) */
+    /* --- CSS MỚI: Giao diện cảnh báo --- */
     .card-alert {
-        /* Các thuộc tính tĩnh */
-        background-color: #ffebee; 
-        border-color: var(--warn); 
-        
-        /* Thuộc tính động (nhấp nháy) */
-        animation: pulse-red 1.5s ease-in-out infinite;
+        background-color: #ffebee; /* Nền màu đỏ nhạt */
+        border-color: var(--warn); /* Viền màu đỏ */
+        box-shadow: 0 8px 25px rgba(255, 77, 77, 0.2); /* Bóng đổ màu đỏ */
     }
-
     /* Đổi màu chữ khi có cảnh báo cho nổi bật trên nền đỏ */
     .card-alert h2,
     .card-alert .value {
