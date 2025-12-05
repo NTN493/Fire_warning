@@ -281,6 +281,11 @@ function updateVal(path, inputId){
         document.getElementById(inputId).value="";
     }).catch((e) => { alert("Lỗi kết nối mạng!"); });
 }
+    db.ref("Heartbeat").on("value", snap => {
+    // Chỉ cần nhận được tín hiệu là cập nhật thời gian ngay
+    lastUpdate = Date.now(); 
+    console.log("Nhận nhịp tim: Online");
+});
 
 /* Connection monitor */
 setInterval(()=>{
@@ -296,3 +301,4 @@ setInterval(()=>{
 </script>
 </body>
 </html>
+
