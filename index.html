@@ -1,4 +1,3 @@
-```html:disable-run
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -37,6 +36,7 @@
     .login-box input {
         width:100%; padding:12px; margin:10px 0;
         border-radius:10px; border:1px solid #ccc;
+        box-sizing: border-box; /* Đảm bảo padding không làm vỡ layout */
     }
     .login-box button {
         margin-top:10px;
@@ -78,48 +78,43 @@
     .card {
         background:var(--card-bg); padding:25px;
         border-radius:18px; box-shadow:var(--shadow); transition:0.3s;
-        /* Thêm viền trong suốt để tránh giật khi thêm border alert */
         border: 2px solid transparent;
     }
     .card:hover { transform:translateY(-3px); }
-   
+    
     /* --- CSS MỚI: Giao diện cảnh báo --- */
     .card-alert {
-        background-color: #ffebee; /* Nền màu đỏ nhạt */
-        border-color: var(--warn); /* Viền màu đỏ */
-        box-shadow: 0 8px 25px rgba(255, 77, 77, 0.2); /* Bóng đổ màu đỏ */
+        background-color: #ffebee;
+        border-color: var(--warn);
+        box-shadow: 0 8px 25px rgba(255, 77, 77, 0.2);
     }
-    /* Đổi màu chữ khi có cảnh báo cho nổi bật trên nền đỏ */
     .card-alert h2,
-    .card-alert .value {
-        color: #c62828; /* Màu đỏ đậm */
-    }
-    .card-alert .status {
-        color: var(--warn);
-        font-weight: bold;
-    }
+    .card-alert .value { color: #c62828; }
+    .card-alert .status { color: var(--warn); font-weight: bold; }
+    
     .card h2 {
         margin:0 0 8px 0; font-size:17px; font-weight:600; color:#444;
         display:flex; justify-content:center; gap:6px; align-items:center;
     }
     .value {
         font-size:42px; font-weight:800; margin-top:8px; color:#111;
+        text-align: center;
     }
-    .status { font-size:14px; margin-top:6px; color:#666; }
-   
-    /* Threshold area - Đã sửa để giữ nền trắng */
+    .status { font-size:14px; margin-top:6px; color:#666; text-align: center; }
+    
+    /* Threshold area */
     .thres-box {
-        margin-top:15px; padding:15px; /* Tăng padding */
-        background-color: #ffffff; /* Luôn giữ nền trắng */
-        border-radius: 12px; /* Bo góc */
-        border: 1px solid #eee; /* Viền nhẹ */
+        margin-top:15px; padding:15px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #eee;
+        text-align: center;
     }
-    /* Khi card bị alert, làm nổi bật nhẹ viền box ngưỡng */
-    .card-alert .thres-box {
-        border-color: #ffcdd2;
-    }
+    .card-alert .thres-box { border-color: #ffcdd2; }
+    
     .thres-box input {
-        padding:8px 10px; width:60%; border:1px solid #bbb; border-radius:10px;
+        padding:8px 10px; width:50%; border:1px solid #bbb; border-radius:10px;
+        margin-bottom: 5px;
     }
     .thres-box button {
         padding:8px 14px; background:#1976d2; color:#fff;
@@ -137,10 +132,12 @@
         <p id="loginError" style="color:red; font-size:13px; display:none;"></p>
     </div>
 </div>
+
 <div id="mainApp">
     <button id="logoutBtn" onclick="logout()">Đăng xuất</button>
     <h1>🔥 Hệ Thống Cảnh Báo Cháy</h1>
     <span id="connectionStatus" class="status-offline">🔴 Mất kết nối</span>
+    
     <div class="grid">
         <div class="card">
             <h2>🌡 Nhiệt độ</h2>
@@ -153,6 +150,7 @@
                 <button onclick="updateVal('Threshold','newThresTemp')">Lưu</button>
             </div>
         </div>
+
         <div class="card">
             <h2>☠ Gas</h2>
             <div class="value" id="gasValue">--</div>
@@ -164,6 +162,7 @@
                 <button onclick="updateVal('GasThreshold','newThresGas')">Lưu</button>
             </div>
         </div>
+
         <div class="card">
             <h2>🔥 Lửa</h2>
             <div class="value" id="flameValue">--</div>
@@ -175,18 +174,22 @@
                 <button onclick="updateVal('FlameThreshold','newThresFlame')">Lưu</button>
             </div>
         </div>
-    </div>
-    <div class="grid">
+
         <div class="card">
-            <h2>📞 Số điện thoại khẩn cấp</h2>
-            <div class="value" id="phoneValue">--</div>
+            <h2>📞 Số điện thoại</h2>
+            <div class="value" id="phoneValue" style="font-size: 28px; word-break: break-all;">--</div>
+            <div class="status">SĐT nhận cảnh báo</div>
             <div class="thres-box">
-                <input id="newPhone" type="number" placeholder="Nhập số điện thoại">
-                <button onclick="updateVal('PhoneNumber','newPhone')">Lưu</button>
+                <span style="font-size: 13px; color: #666;">Nhập số mới:</span>
+                <br><br>
+                <input id="newPhone" type="text" placeholder="Ví dụ: 0939..." maxlength="12">
+                <button onclick="updatePhone()">Lưu</button>
             </div>
         </div>
+
     </div>
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -204,6 +207,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
+
 /* ================= LOGIN / LOGOUT ================= */
 function login(){
     let email = document.getElementById('email').value;
@@ -216,6 +220,7 @@ function login(){
     });
 }
 function logout(){ auth.signOut(); }
+
 auth.onAuthStateChanged(user=>{
     if(user){
         document.getElementById('loginScreen').style.display="none";
@@ -225,31 +230,32 @@ auth.onAuthStateChanged(user=>{
         document.getElementById('mainApp').style.display="none";
     }
 });
-/* ================= SENSOR UPDATE (ĐÃ SỬA) ================= */
+
+/* ================= SENSOR UPDATE ================= */
 let limits = { temp:100, gas:100, flame:100 };
 let lastUpdate = 0;
 const timeoutLimit = 10000;
+
 function updateUI(type,val,limit,valueId,statusId){
     const valueEl = document.getElementById(valueId);
     const statusEl = document.getElementById(statusId);
-    // Lấy phần tử thẻ card cha
     const cardEl = valueEl.closest('.card');
+    
     valueEl.innerText = val;
-   
+    
     // Logic: Flame < Limit là cháy, còn lại > Limit là cháy
     let alert = (type==="flame") ? val < limit : val >= limit;
-   
+    
     if(alert){
-        // Thêm class cảnh báo cho cả card
         cardEl.classList.add("card-alert");
         statusEl.innerText="⚠️ Nguy hiểm!";
     } else {
-        // Xóa class cảnh báo
         cardEl.classList.remove("card-alert");
         statusEl.innerText="Bình thường";
     }
     lastUpdate = Date.now();
 }
+
 // Lắng nghe dữ liệu
 db.ref("Temperature").on("value",snap=>{
     let v=snap.val()||0; updateUI("temp",v,limits.temp,"tempValue","tempStatus");
@@ -260,34 +266,61 @@ db.ref("Gas").on("value",snap=>{
 db.ref("Flame").on("value",snap=>{
     let v=snap.val()||0; updateUI("flame",v,limits.flame,"flameValue","flameStatus");
 });
+
 // Lắng nghe ngưỡng
 db.ref("Threshold").on("value",s=>{ limits.temp=s.val(); document.getElementById('thresTemp').innerText=s.val();});
 db.ref("GasThreshold").on("value",s=>{ limits.gas=s.val(); document.getElementById('thresGas').innerText=s.val();});
 db.ref("FlameThreshold").on("value",s=>{ limits.flame=s.val(); document.getElementById('thresFlame').innerText=s.val();});
+
+/* ================= PHONE NUMBER LOGIC (MỚI) ================= */
+// Lắng nghe số điện thoại từ Firebase
+db.ref("PhoneNumber").on("value", snap => {
+    let val = snap.val() || "Chưa có";
+    document.getElementById('phoneValue').innerText = val;
+});
+
+// Hàm cập nhật số điện thoại
+function updatePhone(){
+    let rawVal = document.getElementById('newPhone').value;
+    if(rawVal === "" || rawVal.length < 9) { 
+        alert("Vui lòng nhập số điện thoại hợp lệ!"); 
+        return; 
+    }
+    
+    // Gửi lên Firebase (key là PhoneNumber giống trong code ESP32)
+    db.ref("PhoneNumber").set(rawVal).then(() => {
+        alert("Đã cập nhật số điện thoại thành công!");
+        document.getElementById('newPhone').value="";
+    }).catch((e) => { alert("Lỗi kết nối mạng!"); });
+}
+
 /* ================= SAVE THRESHOLD ================= */
 function updateVal(path, inputId){
     let rawVal = document.getElementById(inputId).value;
     if(rawVal === "") { alert("Vui lòng nhập giá trị!"); return; }
     let v = Number(rawVal);
     let min = 0, max = 0; let label = "";
+    
     if(path === 'Threshold') { min = 0; max = 100; label = "Nhiệt độ"; }
     else if (path === 'GasThreshold') { min = 100; max = 4000; label = "Khí Gas"; }
     else if (path === 'FlameThreshold') { min = 0; max = 4095; label = "Cảm biến Lửa"; }
+    
     if (v < min || v > max) {
         alert("LỖI: Giá trị " + label + " phải nằm trong khoảng " + min + " đến " + max + "!");
         return;
     }
+    
     db.ref(path).set(v).then(() => {
         alert("Đã cập nhật " + label + " thành công!");
         document.getElementById(inputId).value="";
     }).catch((e) => { alert("Lỗi kết nối mạng!"); });
 }
-    db.ref("Heartbeat").on("value", snap => {
-    // Chỉ cần nhận được tín hiệu là cập nhật thời gian ngay
+
+/* ================= CONNECTION MONITOR ================= */
+db.ref("Heartbeat").on("value", snap => {
     lastUpdate = Date.now();
-    console.log("Nhận nhịp tim: Online");
 });
-/* Connection monitor */
+
 setInterval(()=>{
     let badge = document.getElementById('connectionStatus');
     if(Date.now()-lastUpdate < timeoutLimit){
@@ -301,4 +334,3 @@ setInterval(()=>{
 </script>
 </body>
 </html>
-```
