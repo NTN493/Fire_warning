@@ -87,7 +87,7 @@
     }
     .card:hover { transform:translateY(-3px); }
     
-    /* --- CSS MỚI: Giao diện cảnh báo --- */
+    /* --- Giao diện cảnh báo --- */
     .card-alert {
         background-color: #ffebee; 
         border-color: var(--warn); 
@@ -153,7 +153,7 @@
         </div>
 
         <div class="card" id="gasCard">
-            <h2>☠ Gas</h2>
+            <h2>☠ Khí Gas</h2>
             <div class="value" id="gasValue">--</div>
             <div class="status" id="gasStatus">Đang tải...</div>
             <div class="thres-box">
@@ -165,7 +165,7 @@
         </div>
 
         <div class="card" id="flameCard">
-            <h2>🔥 Lửa</h2>
+            <h2>🔥 Cảm biến Lửa</h2>
             <div class="value" id="flameValue">--</div>
             <div class="status" id="flameStatus">Đang tải...</div>
             <div class="thres-box">
@@ -176,11 +176,11 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card full-width">
             <h2>📞 Số điện thoại khẩn cấp</h2>
             <div style="font-size:24px; font-weight:bold; margin:10px 0; color:blue;" id="currPhone">--</div>
             <div class="thres-box">
-                <input id="newPhone" type="text" placeholder="Nhập 10 số...">
+                <input id="newPhone" type="text" placeholder="Nhập 10 số (VD: 0912345678)...">
                 <button onclick="updatePhone()">Lưu SĐT</button>
             </div>
         </div>
@@ -229,19 +229,20 @@ auth.onAuthStateChanged(user=>{
 });
 
 /* ================= LOGIC DỮ LIỆU ================= */
+// Đã xóa biến smoke
 let data = { temp:0, gas:0, flame:0 };
 let limits = { temp:100, gas:100, flame:100 };
 let lastUpdate = 0;
 const timeoutLimit = 12000;
 
-function updateUI(type,val,limit,valueId,statusId,unit){
+function updateUI(type, val, limit, valueId, statusId, unit){
     const valueEl = document.getElementById(valueId);
     const statusEl = document.getElementById(statusId);
     const cardEl = valueEl.closest('.card');
 
     valueEl.innerHTML = `${val} <span style="font-size:16px">${unit}</span>`;
     
-    // Lửa: < Limit là cháy. Còn lại > Limit là cháy
+    // Logic: Lửa < Limit là cháy. Còn lại > Limit là cháy
     let alert = (type==="flame") ? val < limit : val >= limit;
     
     if(alert){
@@ -259,6 +260,9 @@ db.ref("Temperature").on("value",snap=>{
     updateUI("temp",data.temp,limits.temp,"tempValue","tempStatus", "°C");
     lastUpdate = Date.now();
 });
+
+// Đã xóa phần lắng nghe Smoke
+
 db.ref("Gas").on("value",snap=>{
     data.gas=Number(snap.val())||0; 
     updateUI("gas",data.gas,limits.gas,"gasValue","gasStatus", "ppm");
@@ -279,6 +283,7 @@ db.ref("Threshold").on("value",s=>{
     limits.temp=Number(s.val()); document.getElementById('thresTemp').innerText=s.val();
     updateUI("temp",data.temp,limits.temp,"tempValue","tempStatus", "°C");
 });
+// Đã xóa phần lắng nghe SmokeThreshold
 db.ref("GasThreshold").on("value",s=>{ 
     limits.gas=Number(s.val()); document.getElementById('thresGas').innerText=s.val();
     updateUI("gas",data.gas,limits.gas,"gasValue","gasStatus", "ppm");
@@ -300,7 +305,7 @@ function updateVal(path, inputId){
     }).catch((e) => { alert("Lỗi kết nối!"); });
 }
 
-// Cập nhật SĐT (Có kiểm tra 10 số)
+// Cập nhật SĐT (Kiểm tra 10 số)
 function updatePhone() {
     let val = document.getElementById("newPhone").value;
     const regex = /^\d{10}$/; 
