@@ -36,7 +36,6 @@
     .login-box input {
         width:100%; padding:12px; margin:10px 0;
         border-radius:10px; border:1px solid #ccc;
-        box-sizing: border-box; /* Đảm bảo padding không làm vỡ layout */
     }
     .login-box button {
         margin-top:10px;
@@ -61,6 +60,7 @@
         border: none; border-radius: 10px; cursor: pointer; font-weight: bold;
     }
     #logoutBtn:hover { background: #333; }
+    
     /* Connection badge */
     #connectionStatus {
         display:inline-block; padding:8px 18px; border-radius:20px;
@@ -69,52 +69,53 @@
     }
     .status-online { background:var(--ok); }
     .status-offline { background:var(--primary); }
+    
     /* ================= DASHBOARD LAYOUT ================= */
     .grid {
-        display:grid; grid-template-columns: repeat(3, 1fr); gap:22px;
+        display:grid; grid-template-columns: repeat(2, 1fr); gap:22px; /* 2 cột cho đẹp */
     }
     @media(max-width:800px){ .grid { grid-template-columns:1fr; } }
+    
+    /* Class cho ô SĐT rộng full */
+    .full-width { grid-column: 1 / -1; }
+
     /* ================= SENSOR CARD ================= */
     .card {
         background:var(--card-bg); padding:25px;
         border-radius:18px; box-shadow:var(--shadow); transition:0.3s;
-        border: 2px solid transparent;
+        border: 2px solid transparent; 
     }
     .card:hover { transform:translateY(-3px); }
     
     /* --- CSS MỚI: Giao diện cảnh báo --- */
     .card-alert {
-        background-color: #ffebee;
-        border-color: var(--warn);
-        box-shadow: 0 8px 25px rgba(255, 77, 77, 0.2);
+        background-color: #ffebee; 
+        border-color: var(--warn); 
+        box-shadow: 0 8px 25px rgba(255, 77, 77, 0.2); 
     }
-    .card-alert h2,
-    .card-alert .value { color: #c62828; }
+    .card-alert h2, .card-alert .value { color: #c62828; }
     .card-alert .status { color: var(--warn); font-weight: bold; }
-    
+
     .card h2 {
         margin:0 0 8px 0; font-size:17px; font-weight:600; color:#444;
         display:flex; justify-content:center; gap:6px; align-items:center;
     }
     .value {
         font-size:42px; font-weight:800; margin-top:8px; color:#111;
-        text-align: center;
     }
-    .status { font-size:14px; margin-top:6px; color:#666; text-align: center; }
+    .status { font-size:14px; margin-top:6px; color:#666; }
     
     /* Threshold area */
     .thres-box {
-        margin-top:15px; padding:15px;
-        background-color: #ffffff;
-        border-radius: 12px;
-        border: 1px solid #eee;
-        text-align: center;
+        margin-top:15px; padding:15px; 
+        background-color: #ffffff; 
+        border-radius: 12px; 
+        border: 1px solid #eee; 
     }
     .card-alert .thres-box { border-color: #ffcdd2; }
-    
+
     .thres-box input {
-        padding:8px 10px; width:50%; border:1px solid #bbb; border-radius:10px;
-        margin-bottom: 5px;
+        padding:8px 10px; width:60%; border:1px solid #bbb; border-radius:10px;
     }
     .thres-box button {
         padding:8px 14px; background:#1976d2; color:#fff;
@@ -139,54 +140,51 @@
     <span id="connectionStatus" class="status-offline">🔴 Mất kết nối</span>
     
     <div class="grid">
-        <div class="card">
+        <div class="card" id="tempCard">
             <h2>🌡 Nhiệt độ</h2>
             <div class="value" id="tempValue">--</div>
             <div class="status" id="tempStatus">Đang tải...</div>
             <div class="thres-box">
                 Ngưỡng: <b id="thresTemp" style="color:#d32f2f">--</b>
                 <br><br>
-                <input id="newThresTemp" type="number" placeholder="0-100" min="0" max="100">
+                <input id="newThresTemp" type="number" placeholder="Mức cảnh báo...">
                 <button onclick="updateVal('Threshold','newThresTemp')">Lưu</button>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="gasCard">
             <h2>☠ Gas</h2>
             <div class="value" id="gasValue">--</div>
             <div class="status" id="gasStatus">Đang tải...</div>
             <div class="thres-box">
                 Ngưỡng: <b id="thresGas" style="color:#d32f2f">--</b>
                 <br><br>
-                <input id="newThresGas" type="number" placeholder="100-4000" min="100" max="4000">
+                <input id="newThresGas" type="number" placeholder="Mức cảnh báo...">
                 <button onclick="updateVal('GasThreshold','newThresGas')">Lưu</button>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="flameCard">
             <h2>🔥 Lửa</h2>
             <div class="value" id="flameValue">--</div>
             <div class="status" id="flameStatus">Đang tải...</div>
             <div class="thres-box">
                 Ngưỡng: <b id="thresFlame" style="color:#d32f2f">--</b>
                 <br><br>
-                <input id="newThresFlame" type="number" placeholder="0-4095" min="0" max="4095">
+                <input id="newThresFlame" type="number" placeholder="Mức cảnh báo...">
                 <button onclick="updateVal('FlameThreshold','newThresFlame')">Lưu</button>
             </div>
         </div>
 
         <div class="card">
-            <h2>📞 Số điện thoại</h2>
-            <div class="value" id="phoneValue" style="font-size: 28px; word-break: break-all;">--</div>
-            <div class="status">SĐT nhận cảnh báo</div>
+            <h2>📞 Số điện thoại khẩn cấp</h2>
+            <div style="font-size:24px; font-weight:bold; margin:10px 0; color:blue;" id="currPhone">--</div>
             <div class="thres-box">
-                <span style="font-size: 13px; color: #666;">Nhập số mới:</span>
-                <br><br>
-                <input id="newPhone" type="text" placeholder="Ví dụ: 0939..." maxlength="12">
-                <button onclick="updatePhone()">Lưu</button>
+                <input id="newPhone" type="text" placeholder="Nhập 10 số...">
+                <button onclick="updatePhone()">Lưu SĐT</button>
             </div>
         </div>
-
+        
     </div>
 </div>
 
@@ -220,7 +218,6 @@ function login(){
     });
 }
 function logout(){ auth.signOut(); }
-
 auth.onAuthStateChanged(user=>{
     if(user){
         document.getElementById('loginScreen').style.display="none";
@@ -231,104 +228,112 @@ auth.onAuthStateChanged(user=>{
     }
 });
 
-/* ================= SENSOR UPDATE ================= */
+/* ================= LOGIC DỮ LIỆU ================= */
+let data = { temp:0, gas:0, flame:0 };
 let limits = { temp:100, gas:100, flame:100 };
 let lastUpdate = 0;
-const timeoutLimit = 10000;
+const timeoutLimit = 12000;
 
-function updateUI(type,val,limit,valueId,statusId){
+function updateUI(type,val,limit,valueId,statusId,unit){
     const valueEl = document.getElementById(valueId);
     const statusEl = document.getElementById(statusId);
     const cardEl = valueEl.closest('.card');
+
+    valueEl.innerHTML = `${val} <span style="font-size:16px">${unit}</span>`;
     
-    valueEl.innerText = val;
-    
-    // Logic: Flame < Limit là cháy, còn lại > Limit là cháy
+    // Lửa: < Limit là cháy. Còn lại > Limit là cháy
     let alert = (type==="flame") ? val < limit : val >= limit;
     
     if(alert){
         cardEl.classList.add("card-alert");
-        statusEl.innerText="⚠️ Nguy hiểm!";
+        statusEl.innerText="⚠️ NGUY HIỂM!";
     } else {
         cardEl.classList.remove("card-alert");
         statusEl.innerText="Bình thường";
     }
-    lastUpdate = Date.now();
 }
 
-// Lắng nghe dữ liệu
+// --- LẮNG NGHE DỮ LIỆU CẢM BIẾN ---
 db.ref("Temperature").on("value",snap=>{
-    let v=snap.val()||0; updateUI("temp",v,limits.temp,"tempValue","tempStatus");
+    data.temp=Number(snap.val())||0; 
+    updateUI("temp",data.temp,limits.temp,"tempValue","tempStatus", "°C");
+    lastUpdate = Date.now();
 });
 db.ref("Gas").on("value",snap=>{
-    let v=snap.val()||0; updateUI("gas",v,limits.gas,"gasValue","gasStatus");
+    data.gas=Number(snap.val())||0; 
+    updateUI("gas",data.gas,limits.gas,"gasValue","gasStatus", "ppm");
+    lastUpdate = Date.now();
 });
 db.ref("Flame").on("value",snap=>{
-    let v=snap.val()||0; updateUI("flame",v,limits.flame,"flameValue","flameStatus");
+    data.flame=Number(snap.val())||0; 
+    updateUI("flame",data.flame,limits.flame,"flameValue","flameStatus", "");
+    lastUpdate = Date.now();
 });
 
-// Lắng nghe ngưỡng
-db.ref("Threshold").on("value",s=>{ limits.temp=s.val(); document.getElementById('thresTemp').innerText=s.val();});
-db.ref("GasThreshold").on("value",s=>{ limits.gas=s.val(); document.getElementById('thresGas').innerText=s.val();});
-db.ref("FlameThreshold").on("value",s=>{ limits.flame=s.val(); document.getElementById('thresFlame').innerText=s.val();});
-
-/* ================= PHONE NUMBER LOGIC (MỚI) ================= */
-// Lắng nghe số điện thoại từ Firebase
+// --- LẮNG NGHE NGƯỠNG & SĐT ---
 db.ref("PhoneNumber").on("value", snap => {
-    let val = snap.val() || "Chưa có";
-    document.getElementById('phoneValue').innerText = val;
+    document.getElementById("currPhone").innerText = snap.val() || "Chưa có";
 });
 
-// Hàm cập nhật số điện thoại
-function updatePhone(){
-    let rawVal = document.getElementById('newPhone').value;
-    if(rawVal === "" || rawVal.length < 9) { 
-        alert("Vui lòng nhập số điện thoại hợp lệ!"); 
-        return; 
-    }
-    
-    // Gửi lên Firebase (key là PhoneNumber giống trong code ESP32)
-    db.ref("PhoneNumber").set(rawVal).then(() => {
-        alert("Đã cập nhật số điện thoại thành công!");
-        document.getElementById('newPhone').value="";
-    }).catch((e) => { alert("Lỗi kết nối mạng!"); });
-}
+db.ref("Threshold").on("value",s=>{ 
+    limits.temp=Number(s.val()); document.getElementById('thresTemp').innerText=s.val();
+    updateUI("temp",data.temp,limits.temp,"tempValue","tempStatus", "°C");
+});
+db.ref("GasThreshold").on("value",s=>{ 
+    limits.gas=Number(s.val()); document.getElementById('thresGas').innerText=s.val();
+    updateUI("gas",data.gas,limits.gas,"gasValue","gasStatus", "ppm");
+});
+db.ref("FlameThreshold").on("value",s=>{ 
+    limits.flame=Number(s.val()); document.getElementById('thresFlame').innerText=s.val();
+    updateUI("flame",data.flame,limits.flame,"flameValue","flameStatus", "");
+});
 
-/* ================= SAVE THRESHOLD ================= */
+/* ================= HÀM LƯU DỮ LIỆU ================= */
+// Cập nhật Ngưỡng
 function updateVal(path, inputId){
     let rawVal = document.getElementById(inputId).value;
     if(rawVal === "") { alert("Vui lòng nhập giá trị!"); return; }
     let v = Number(rawVal);
-    let min = 0, max = 0; let label = "";
-    
-    if(path === 'Threshold') { min = 0; max = 100; label = "Nhiệt độ"; }
-    else if (path === 'GasThreshold') { min = 100; max = 4000; label = "Khí Gas"; }
-    else if (path === 'FlameThreshold') { min = 0; max = 4095; label = "Cảm biến Lửa"; }
-    
-    if (v < min || v > max) {
-        alert("LỖI: Giá trị " + label + " phải nằm trong khoảng " + min + " đến " + max + "!");
-        return;
-    }
-    
     db.ref(path).set(v).then(() => {
-        alert("Đã cập nhật " + label + " thành công!");
+        alert("Đã lưu ngưỡng mới!");
         document.getElementById(inputId).value="";
-    }).catch((e) => { alert("Lỗi kết nối mạng!"); });
+    }).catch((e) => { alert("Lỗi kết nối!"); });
 }
 
-/* ================= CONNECTION MONITOR ================= */
-db.ref("Heartbeat").on("value", snap => {
-    lastUpdate = Date.now();
-});
+// Cập nhật SĐT (Có kiểm tra 10 số)
+function updatePhone() {
+    let val = document.getElementById("newPhone").value;
+    const regex = /^\d{10}$/; 
+    if (regex.test(val)) {
+        db.ref("PhoneNumber").set(val);
+        alert("✅ Đã lưu số điện thoại!");
+        document.getElementById("newPhone").value = "";
+    } else {
+        alert("❌ Lỗi: Số điện thoại phải có đúng 10 chữ số!");
+    }
+}
 
+// --- KIỂM TRA TRẠNG THÁI MẠNG ---
 setInterval(()=>{
     let badge = document.getElementById('connectionStatus');
+    if (lastUpdate === 0) {
+         if(badge.innerText !== "🔴 Đang tìm thiết bị...") {
+             badge.className="status-badge status-offline";
+             badge.innerText="🔴 Đang tìm thiết bị...";
+         }
+         return;
+    }
+    
     if(Date.now()-lastUpdate < timeoutLimit){
-        badge.className="status-online";
-        badge.innerText="🟢 Đang kết nối";
+        if(badge.innerText !== "🟢 Đang kết nối") {
+            badge.className="status-badge status-online";
+            badge.innerText="🟢 Đang kết nối";
+        }
     } else {
-        badge.className="status-offline";
-        badge.innerText="🔴 Mất kết nối";
+        if(badge.innerText !== "🔴 Mất kết nối (Offline)") {
+            badge.className="status-badge status-offline";
+            badge.innerText="🔴 Mất kết nối (Offline)";
+        }
     }
 },1000);
 </script>
