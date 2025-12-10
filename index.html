@@ -182,7 +182,12 @@
             <div class="thres-box">
                 <span style="font-size: 13px; color: #666;">Nhập số mới:</span>
                 <br><br>
-                <input id="newPhone" type="text" placeholder="Ví dụ: 0939..." maxlength="12">
+                <input id="newPhone"
+                       type="text" 
+                       placeholder="Ví dụ: 0939..."
+                       maxlength="10"
+                       oninput = "validatePhoneInput(this)"
+                       style="text-align:center; font-size:18px; letter-spacing:1px;">
                 <button onclick="updatePhone()">Lưu</button>
             </div>
         </div>
@@ -279,20 +284,34 @@ db.ref("PhoneNumber").on("value", snap => {
     document.getElementById('phoneValue').innerText = val;
 });
 
-// Hàm cập nhật số điện thoại
-function updatePhone(){
-    let rawVal = document.getElementById('newPhone').value;
-    if(rawVal === "" || rawVal.length < 9) { 
-        alert("Vui lòng nhập số điện thoại hợp lệ!"); 
-        return; 
+// Chặn ký tự ngoài 0–9
+function validatePhoneInput(input) {
+    input.value = input.value.replace(/[^0-9]/g, "");
+    if (input.value.length > 10) {
+        input.value = input.value.slice(0, 10);
     }
-    
-    // Gửi lên Firebase (key là PhoneNumber giống trong code ESP32)
-    db.ref("PhoneNumber").set(rawVal).then(() => {
-        alert("Đã cập nhật số điện thoại thành công!");
-        document.getElementById('newPhone').value="";
-    }).catch((e) => { alert("Lỗi kết nối mạng!"); });
 }
+
+// Cập nhật SĐT
+function updatePhone() {
+    let rawVal = document.getElementById('newPhone').value;
+
+    if (!/^[0-9]{10}$/.test(rawVal)) {
+        alert("❌ Số điện thoại phải gồm đúng 10 số (0–9)!");
+        return;
+    }
+
+    // LƯU LÊN FIREBASE
+    db.ref("PhoneNumber").set(rawVal)
+    .then(() => {
+        alert("✅ Đã cập nhật số điện thoại thành công!");
+        document.getElementById('newPhone').value = "";
+    })
+    .catch(() => {
+        alert("❌ Lỗi kết nối mạng!");
+    });
+}
+
 
 /* ================= SAVE THRESHOLD ================= */
 function updateVal(path, inputId){
@@ -334,3 +353,4 @@ setInterval(()=>{
 </script>
 </body>
 </html>
+
