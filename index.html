@@ -293,11 +293,11 @@ function validatePhoneInput(input) {
 }
 
 // Cập nhật SĐT
-function updatePhone() {
+ function updatePhone() {
     let rawVal = document.getElementById('newPhone').value;
 
     if (!/^[0-9]{10}$/.test(rawVal)) {
-        alert("❌ Số điện thoại phải gồm đúng 10 số (0–9)!");
+        alert("❌ Số điện thoại phải gồm đúng 10 số (0-9)!");
         return;
     }
 
